@@ -641,7 +641,7 @@ abstract class AppLocalizations {
   /// No description provided for @history.
   ///
   /// In en, this message translates to:
-  /// **'Payment history & receipts'**
+  /// **'Our history'**
   String get history;
 
   /// No description provided for @profile.
@@ -1273,6 +1273,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Manual · {method}'**
   String manualMethod(String method);
+
+  /// No description provided for @gallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Gallery'**
+  String get gallery;
+
+  /// No description provided for @photoCredits.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo credits'**
+  String get photoCredits;
+
+  /// No description provided for @photoCreditsSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Placeholder photography until CHI supplies its own. All images from Wikimedia Commons.'**
+  String get photoCreditsSub;
+
+  /// No description provided for @visitUs.
+  ///
+  /// In en, this message translates to:
+  /// **'Visit us'**
+  String get visitUs;
+
+  /// No description provided for @eventsSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Lectures, gatherings and community days'**
+  String get eventsSub;
 }
 
 class _AppLocalizationsDelegate

@@ -286,7 +286,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get payMonths => 'Pay upcoming months';
 
   @override
-  String get history => 'Payment history & receipts';
+  String get history => 'Our history';
 
   @override
   String get profile => 'Profile & settings';
@@ -612,4 +612,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String manualMethod(String method) {
     return 'Manual · $method';
   }
+
+  @override
+  String get gallery => 'Gallery';
+
+  @override
+  String get photoCredits => 'Photo credits';
+
+  @override
+  String get photoCreditsSub =>
+      'Placeholder photography until CHI supplies its own. All images from Wikimedia Commons.';
+
+  @override
+  String get visitUs => 'Visit us';
+
+  @override
+  String get eventsSub => 'Lectures, gatherings and community days';
 }

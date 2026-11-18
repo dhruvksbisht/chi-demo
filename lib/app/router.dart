@@ -7,6 +7,7 @@ import '../features/admin/admin_screen.dart';
 import '../features/centenary/centenary_screen.dart';
 import '../features/committee/committee_screen.dart';
 import '../features/contacts/contacts_screen.dart';
+import '../features/credits/credits_screen.dart';
 import '../features/documents/documents_screen.dart';
 import '../features/donate/donate_screen.dart';
 import '../features/duas/duas_screen.dart';
@@ -97,6 +98,7 @@ GoRouter buildRouter() {
       page('/receipt/:id', (s) => ReceiptScreen(id: s.pathParameters['id']!)),
       page('/profile', (_) => const ProfileScreen()),
       page('/admin', (_) => const AdminScreen()),
+      page('/credits', (_) => const CreditsScreen()),
       page('/pay', (_) => const PayScreen()),
       modal(
         '/checkout',

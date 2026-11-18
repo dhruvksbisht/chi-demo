@@ -316,36 +316,39 @@ class AppButton extends StatelessWidget {
               borderRadius: BorderRadius.circular(Radii.md),
               border: Border.all(color: border),
             ),
-            alignment: Alignment.center,
-            child: AnimatedSwitcher(
-              duration: Motion.short,
-              child: loading
-                  ? SizedBox(
-                      key: const ValueKey('busy'),
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.2,
-                        color: fg,
-                      ),
-                    )
-                  : Row(
-                      key: const ValueKey('idle'),
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (icon != null) ...[
-                          Icon(icon, size: 20, color: fg),
-                          const SizedBox(width: Space.sm),
-                        ],
-                        Flexible(
-                          child: Text(
-                            label,
-                            style: AppText.bodyStrong.copyWith(color: fg),
-                            textAlign: TextAlign.center,
-                          ),
+            // Centre without Container.alignment, which would expand to fill a loose parent.
+            child: Center(
+              heightFactor: 1,
+              child: AnimatedSwitcher(
+                duration: Motion.short,
+                child: loading
+                    ? SizedBox(
+                        key: const ValueKey('busy'),
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.2,
+                          color: fg,
                         ),
-                      ],
-                    ),
+                      )
+                    : Row(
+                        key: const ValueKey('idle'),
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (icon != null) ...[
+                            Icon(icon, size: 20, color: fg),
+                            const SizedBox(width: Space.sm),
+                          ],
+                          Flexible(
+                            child: Text(
+                              label,
+                              style: AppText.bodyStrong.copyWith(color: fg),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
             ),
           ),
         ),
@@ -362,12 +365,16 @@ class IconBtn extends StatelessWidget {
     required this.label,
     required this.onTap,
     this.badge = false,
+    this.onPhoto = false,
   });
 
   final IconData icon;
   final String label;
   final VoidCallback onTap;
   final bool badge;
+
+  /// Translucent dark variant for use over photography.
+  final bool onPhoto;
 
   @override
   Widget build(BuildContext context) => Pressable(
@@ -380,14 +387,20 @@ class IconBtn extends StatelessWidget {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: onPhoto ? const Color(0x59000000) : AppColors.surface,
             shape: BoxShape.circle,
-            border: Border.all(color: AppColors.line),
+            border: Border.all(
+              color: onPhoto ? const Color(0x33FFFFFF) : AppColors.line,
+            ),
           ),
           child: Stack(
             alignment: Alignment.center,
             children: [
-              Icon(icon, size: 20, color: AppColors.ink),
+              Icon(
+                icon,
+                size: 20,
+                color: onPhoto ? AppColors.onNight : AppColors.ink,
+              ),
               if (badge)
                 Positioned(
                   top: 8,

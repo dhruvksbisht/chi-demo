@@ -106,6 +106,11 @@ class ProfileScreen extends ConsumerWidget {
                 title: t.adminPreview,
                 onTap: () => context.push('/admin'),
               ),
+              ListRow(
+                icon: Icons.photo_library_rounded,
+                title: t.photoCredits,
+                onTap: () => context.push('/credits'),
+              ),
               // FR-028 / SEC-10: deletion request under the Data Protection Act.
               ListRow(
                 icon: Icons.delete_rounded,

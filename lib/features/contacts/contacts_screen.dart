@@ -1,9 +1,11 @@
 import 'package:flutter/foundation.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/theme/tokens.dart';
 import '../../core/utils/format.dart';
+import '../../core/widgets/photo.dart';
 import '../../core/widgets/ui.dart';
 import '../../data/content.dart';
 
@@ -31,8 +33,8 @@ class ContactsScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(
-                height: 160,
-                child: CustomPaint(painter: _MapPainter()),
+                height: 200,
+                child: Photo(Photos.jummahFront, alignment: Alignment(0, -0.3)),
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(
@@ -118,66 +120,13 @@ class ContactsScreen extends StatelessWidget {
             ),
           ],
         ),
+        AppButton(
+          label: t.photoCredits,
+          kind: ButtonKind.ghost,
+          icon: Icons.photo_library_rounded,
+          onPressed: () => context.push('/credits'),
+        ),
       ],
     );
   }
-}
-
-/// Stylised, offline-safe map; the button hands off to the device's maps app.
-class _MapPainter extends CustomPainter {
-  const _MapPainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    // Scale a 340 x 170 drawing to cover the box.
-    final s = (size.width / 340) > (size.height / 170)
-        ? size.width / 340
-        : size.height / 170;
-    canvas.drawRect(Offset.zero & size, Paint()..color = AppColors.sunken);
-    canvas.translate((size.width - 340 * s) / 2, (size.height - 170 * s) / 2);
-    canvas.scale(s);
-    canvas.drawPath(
-      Path()
-        ..moveTo(0, 120)
-        ..cubicTo(60, 100, 90, 150, 160, 130)
-        ..cubicTo(230, 110, 270, 90, 340, 110)
-        ..lineTo(340, 170)
-        ..lineTo(0, 170)
-        ..close(),
-      Paint()..color = const Color(0xFFDCE9F0),
-    );
-    final road = Paint()
-      ..color = AppColors.surface
-      ..strokeWidth = 7;
-    canvas.drawLine(const Offset(20, 0), const Offset(120, 170), road);
-    canvas.drawLine(const Offset(0, 60), const Offset(340, 40), road);
-    canvas.drawLine(const Offset(200, 0), const Offset(240, 170), road);
-    canvas.drawLine(const Offset(290, 0), const Offset(260, 170), road);
-    canvas.drawLine(
-      const Offset(0, 90),
-      const Offset(340, 75),
-      road..strokeWidth = 11,
-    );
-    canvas.drawCircle(
-      const Offset(175, 78),
-      22,
-      Paint()..color = AppColors.amber.withValues(alpha: 0.25),
-    );
-    canvas.drawCircle(
-      const Offset(175, 78),
-      9,
-      Paint()..color = AppColors.amber,
-    );
-    canvas.drawCircle(
-      const Offset(175, 78),
-      9,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.5
-        ..color = AppColors.ink,
-    );
-  }
-
-  @override
-  bool shouldRepaint(_MapPainter old) => false;
 }

@@ -70,6 +70,7 @@ flutter:
   generate: true
   assets:
     - assets/images/
+    - assets/images/photos/
   fonts:
     - family: Fraunces
       fonts:

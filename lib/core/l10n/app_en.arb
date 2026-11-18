@@ -90,7 +90,7 @@
   "upcoming": "Upcoming",
   "subscription": "Subscription",
   "payMonths": "Pay upcoming months",
-  "history": "Payment history & receipts",
+  "history": "Our history",
   "profile": "Profile & settings",
   "arrears": "Arrears",
   "category": "Category",
@@ -209,5 +209,10 @@
         "type": "String"
       }
     }
-  }
+  },
+  "gallery": "Gallery",
+  "photoCredits": "Photo credits",
+  "photoCreditsSub": "Placeholder photography until CHI supplies its own. All images from Wikimedia Commons.",
+  "visitUs": "Visit us",
+  "eventsSub": "Lectures, gatherings and community days"
 }

@@ -3,7 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/utils/format.dart';
 import '../../core/utils/time.dart';
-import '../../core/widgets/brand.dart';
+import '../../core/widgets/photo.dart';
 import '../../core/widgets/ui.dart';
 
 const _days = 30;
@@ -37,89 +37,69 @@ class RamadanScreen extends StatelessWidget {
     ];
     final head = AppText.overline.copyWith(color: AppColors.muted);
 
-    return AppScreen(
-      back: true,
+    final big = AppText.hero
+        .copyWith(fontSize: 56, height: 62 / 56, color: AppColors.amber)
+        .tabular;
+    return PhotoScreen(
+      photo: const Photo(
+        Photos.crescent,
+        alignment: Alignment(0.3, 0),
+        scrim: Scrims.both,
+      ),
+      height: 360,
       title: '${t.ramadan} $hijriYear',
-      subtitle: t.sightingNote,
+      overlay: Padding(
+        padding: const EdgeInsets.only(top: Space.md),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: current != null
+              ? [
+                  Text(
+                    t.dayOf,
+                    style: AppText.overline.copyWith(
+                      color: AppColors.onNightMuted,
+                    ),
+                  ),
+                  Text('$current / $_days', style: big),
+                  Text(
+                    '${t.iftar} ${timetable[current - 1].iftar}',
+                    style: AppText.label.copyWith(color: AppColors.onNight),
+                  ),
+                ]
+              : [
+                  Text(
+                    t.ramadanBegins,
+                    style: AppText.overline.copyWith(
+                      color: AppColors.onNightMuted,
+                    ),
+                  ),
+                  Wrap(
+                    spacing: Space.sm,
+                    crossAxisAlignment: WrapCrossAlignment.end,
+                    children: [
+                      Text('$countdown', style: big),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: Text(
+                          t.days,
+                          style: AppText.heading.copyWith(
+                            color: AppColors.onNight,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Text(
+                    '≈ ${capitalize(weekdayName(lang, start))} ${longDate(lang, start)}',
+                    style: AppText.label.copyWith(color: AppColors.onNight),
+                  ),
+                ],
+        ),
+      ),
       children: [
-        AppCard(
-          tone: CardTone.night,
-          padding: EdgeInsets.zero,
-          child: Stack(
-            children: [
-              const Positioned(
-                right: -60,
-                bottom: -70,
-                child: Star(size: 200, opacity: 0.22),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(Space.xl),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: current != null
-                      ? [
-                          Text(
-                            t.dayOf,
-                            style: AppText.overline.copyWith(
-                              color: AppColors.onNightMuted,
-                            ),
-                          ),
-                          Text(
-                            '$current / $_days',
-                            style: AppText.hero
-                                .copyWith(color: AppColors.amber)
-                                .tabular,
-                          ),
-                          Text(
-                            '${t.iftar} ${timetable[current - 1].iftar}',
-                            style: AppText.label.copyWith(
-                              color: AppColors.onNightMuted,
-                            ),
-                          ),
-                        ]
-                      : [
-                          Text(
-                            t.ramadanBegins,
-                            style: AppText.overline.copyWith(
-                              color: AppColors.onNightMuted,
-                            ),
-                          ),
-                          Wrap(
-                            spacing: Space.sm,
-                            crossAxisAlignment: WrapCrossAlignment.end,
-                            children: [
-                              Text(
-                                '$countdown',
-                                style: AppText.hero
-                                    .copyWith(
-                                      fontSize: 56,
-                                      height: 62 / 56,
-                                      color: AppColors.amber,
-                                    )
-                                    .tabular,
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 10),
-                                child: Text(
-                                  t.days,
-                                  style: AppText.heading.copyWith(
-                                    color: AppColors.onNight,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          Text(
-                            '≈ ${capitalize(weekdayName(lang, start))} ${longDate(lang, start)}',
-                            style: AppText.label.copyWith(
-                              color: AppColors.onNightMuted,
-                            ),
-                          ),
-                        ],
-                ),
-              ),
-            ],
-          ),
+        Text(
+          t.sightingNote,
+          style: AppText.caption.copyWith(color: AppColors.muted),
         ),
         Section(
           title: t.timetable,

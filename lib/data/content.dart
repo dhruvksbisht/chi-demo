@@ -3,6 +3,7 @@
 library;
 
 import 'models.dart';
+import 'photos.dart';
 
 const member = Member(
   name: 'Yusuf Rahim Bhugeloo',
@@ -26,6 +27,7 @@ class NewsItem {
     required this.title,
     required this.summary,
     required this.body,
+    required this.photo,
   });
   final String id;
   final NewsKind kind;
@@ -33,11 +35,13 @@ class NewsItem {
   final L title;
   final L summary;
   final L body;
+  final Photos photo;
 }
 
 const news = <NewsItem>[
   NewsItem(
     id: 'agm-2026',
+    photo: Photos.jummahHall,
     kind: NewsKind.notice,
     daysAgo: 1,
     title: L(
@@ -55,6 +59,7 @@ const news = <NewsItem>[
   ),
   NewsItem(
     id: 'janaza-1',
+    photo: Photos.crescent,
     kind: NewsKind.janaza,
     daysAgo: 2,
     title: L(
@@ -72,6 +77,7 @@ const news = <NewsItem>[
   ),
   NewsItem(
     id: 'centenary-update',
+    photo: Photos.jummah1970s,
     kind: NewsKind.news,
     daysAgo: 6,
     title: L(
@@ -89,6 +95,7 @@ const news = <NewsItem>[
   ),
   NewsItem(
     id: 'madrassah',
+    photo: Photos.doorway,
     kind: NewsKind.news,
     daysAgo: 11,
     title: L(
@@ -246,6 +253,7 @@ class EventItem {
     required this.time,
     required this.title,
     required this.place,
+    required this.photo,
     this.membersOnly = false,
   });
   final String id;
@@ -254,11 +262,13 @@ class EventItem {
   final L title;
   final String place;
   final bool membersOnly;
+  final Photos photo;
 }
 
 const events = <EventItem>[
   EventItem(
     id: 'agm',
+    photo: Photos.jummahHall,
     inDays: 20,
     time: '16:45',
     title: L('Annual General Meeting', 'Assemblée générale annuelle'),
@@ -267,6 +277,7 @@ const events = <EventItem>[
   ),
   EventItem(
     id: 'lecture',
+    photo: Photos.doorway,
     inDays: 6,
     time: '19:45',
     title: L('Seerah lecture series', 'Cycle de conférences sur la Sîra'),
@@ -274,6 +285,7 @@ const events = <EventItem>[
   ),
   EventItem(
     id: 'cleanup',
+    photo: Photos.jummahCourtyard,
     inDays: 13,
     time: '08:00',
     title: L('Community clean-up day', 'Journée de nettoyage'),
@@ -281,6 +293,7 @@ const events = <EventItem>[
   ),
   EventItem(
     id: 'iftar',
+    photo: Photos.crescent,
     inDays: 92,
     time: '18:30',
     title: L('Centenary community iftar', 'Iftar communautaire du centenaire'),

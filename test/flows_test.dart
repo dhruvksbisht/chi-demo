@@ -81,4 +81,17 @@ void main() {
     expect(find.text('Enter your full name'), findsOneWidget);
     expect(find.text('Consent is required'), findsOneWidget);
   });
+
+  testWidgets('French at 200% text size: no overflow on the main screens', (tester) async {
+    tester.platformDispatcher.textScaleFactorTestValue = 2;
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    await _pumpApp(tester);
+    await tester.tap(find.text('FR'));
+    await _settle(tester);
+    for (final tab in ['Comité', 'FAQ', 'Contacts', 'Membre']) {
+      await tester.tap(find.text(tab).last);
+      await _settle(tester);
+    }
+    // Any RenderFlex overflow fails the test via the framework's error reporting.
+  });
 }

@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/theme/tokens.dart';
 import '../../core/utils/format.dart';
+import '../../core/widgets/photo.dart';
 import '../../core/widgets/ui.dart';
 import '../../data/content.dart';
 import 'widgets/news_widgets.dart';
@@ -26,15 +27,12 @@ class ArticleScreen extends StatelessWidget {
         ],
       );
     }
-    return AppScreen(
-      back: true,
+    return PhotoScreen(
+      photo: NewsPhoto(item: item, scrim: Scrims.both),
+      eyebrow: KindTag(item.kind),
       title: context.tr(item.title),
-      subtitle: '${kindLabel(context, item.kind)} · ${ago(t, item.daysAgo)}',
+      subtitle: ago(t, item.daysAgo),
       children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(Radii.lg),
-          child: SizedBox(height: 170, child: NewsArt(item: item, tag: false)),
-        ),
         Text(
           context.tr(item.body),
           style: AppText.body.copyWith(fontSize: 17, height: 27 / 17),

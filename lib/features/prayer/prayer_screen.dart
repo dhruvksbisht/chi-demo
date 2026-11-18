@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/utils/format.dart';
 import '../../core/utils/time.dart';
+import '../../core/widgets/photo.dart';
 import '../../core/widgets/ui.dart';
 import '../../data/app_state.dart';
 
@@ -22,8 +23,9 @@ class PrayerScreen extends ConsumerWidget {
         final hijri = toHijri(today);
         final next = nextPrayer(now);
         final times = prayerTimesFor(today);
-        return AppScreen(
-          back: true,
+        return PhotoScreen(
+          photo: const Photo(Photos.portLouisLights, scrim: Scrims.both),
+          height: 240,
           title: t.prayerTimes,
           subtitle:
               '${longDate(context.lang, today)} · ${hijri.d} ${hijriMonthName(hijri.m)} ${hijri.y}',

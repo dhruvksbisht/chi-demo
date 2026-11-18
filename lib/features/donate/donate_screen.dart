@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/theme/tokens.dart';
 import '../../core/utils/format.dart';
+import '../../core/widgets/photo.dart';
 import '../../core/widgets/ui.dart';
 import '../../data/content.dart';
 import '../payments/checkout_screen.dart';
@@ -73,8 +74,13 @@ class _DonateScreenState extends State<DonateScreen> {
       },
     );
 
-    return AppScreen(
-      back: true,
+    return PhotoScreen(
+      photo: const Photo(
+        Photos.jummahCourtyard,
+        alignment: Alignment(0, -0.3),
+        scrim: Scrims.both,
+      ),
+      height: 260,
       title: t.donate,
       subtitle: t.donateSub,
       footer: AppButton(

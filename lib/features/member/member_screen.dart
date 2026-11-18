@@ -7,6 +7,7 @@ import '../../core/theme/tokens.dart';
 import '../../core/utils/biometric.dart';
 import '../../core/utils/format.dart';
 import '../../core/widgets/brand.dart';
+import '../../core/widgets/photo.dart';
 import '../../core/widgets/ui.dart';
 import '../../data/app_state.dart';
 import '../../data/content.dart';
@@ -85,7 +86,41 @@ class _LoginState extends ConsumerState<_Login> {
       title: t.memberLogin,
       subtitle: t.loginSub,
       children: [
-        const Center(child: Logo(size: 88)),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(Radii.lg),
+          child: SizedBox(
+            height: 180,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                const Photo(
+                  Photos.jummahCourtyard,
+                  alignment: Alignment(0, -0.4),
+                  scrim: Scrims.bottom,
+                ),
+                Positioned(
+                  left: Space.lg,
+                  bottom: Space.lg,
+                  right: Space.lg,
+                  child: Row(
+                    children: [
+                      const Logo(size: 52),
+                      const SizedBox(width: Space.md),
+                      Expanded(
+                        child: Text(
+                          societyName,
+                          style: AppText.bodyStrong.copyWith(
+                            color: AppColors.onNight,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
         if (bioOn && bio != BiometricKind.none)
           AppCard(
             tone: CardTone.amber,

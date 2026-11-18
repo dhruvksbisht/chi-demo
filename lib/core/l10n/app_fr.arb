@@ -90,7 +90,7 @@
   "upcoming": "À venir",
   "subscription": "Cotisation",
   "payMonths": "Payer les mois à venir",
-  "history": "Historique et reçus",
+  "history": "Notre histoire",
   "profile": "Profil et réglages",
   "arrears": "Arriérés",
   "category": "Catégorie",
@@ -195,5 +195,10 @@
   "centenaryDetail": "Cent ans en 2027",
   "inactive": "Inactif",
   "inactiveNote": "Votre adhésion est inactive. Contactez la société pour régulariser votre solde.",
-  "manualMethod": "Manuel · {method}"
+  "manualMethod": "Manuel · {method}",
+  "gallery": "Galerie",
+  "photoCredits": "Crédits photo",
+  "photoCreditsSub": "Photos provisoires en attendant celles de la CHI. Toutes les images proviennent de Wikimedia Commons.",
+  "visitUs": "Nous rendre visite",
+  "eventsSub": "Conférences, rencontres et journées communautaires"
 }

@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/utils/format.dart';
 import '../../core/utils/time.dart';
+import '../../core/widgets/photo.dart';
 import '../../core/widgets/ui.dart';
 import '../../data/app_state.dart';
 import '../../data/content.dart';
@@ -18,11 +19,12 @@ class EventsScreen extends ConsumerWidget {
     final rsvps = ref.watch(appProvider.select((s) => s.rsvps));
     final today = muToday();
     final sorted = [...events]..sort((a, b) => a.inDays.compareTo(b.inDays));
-    final meta = AppText.caption.copyWith(color: AppColors.muted);
+    final meta = AppText.label.copyWith(color: AppColors.muted);
 
     return AppScreen(
       back: true,
       title: t.events,
+      subtitle: t.eventsSub,
       children: [
         for (final (i, e) in sorted.indexed)
           EnterFade(
@@ -30,71 +32,85 @@ class EventsScreen extends ConsumerWidget {
             child: () {
               final day = addDays(today, e.inDays);
               final going = rsvps.contains(e.id);
-              return AppCard(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              return Container(
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(Radii.lg),
+                  border: Border.all(color: AppColors.line),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Container(
-                      width: 56,
-                      height: 64,
-                      decoration: BoxDecoration(
-                        color: AppColors.amberSoft,
-                        borderRadius: BorderRadius.circular(Radii.md),
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                    SizedBox(
+                      height: 150,
+                      child: Stack(
+                        fit: StackFit.expand,
                         children: [
-                          Text(
-                            capitalize(monthName(lang, day.m, short: true)),
-                            style: AppText.overline.copyWith(
-                              color: AppColors.amberDeep,
+                          Photo(e.photo),
+                          Positioned(
+                            left: Space.md,
+                            top: Space.md,
+                            child: Container(
+                              width: 52,
+                              padding: const EdgeInsets.symmetric(vertical: 6),
+                              decoration: BoxDecoration(
+                                color: AppColors.surface,
+                                borderRadius: BorderRadius.circular(Radii.md),
+                              ),
+                              child: Column(
+                                children: [
+                                  Text(
+                                    capitalize(
+                                      monthName(lang, day.m, short: true),
+                                    ),
+                                    style: AppText.caption.copyWith(
+                                      color: AppColors.amberDeep,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  Text(
+                                    '${day.d}',
+                                    style: AppText.heading.tabular,
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                          Text('${day.d}', style: AppText.title.tabular),
+                          if (e.membersOnly)
+                            Positioned(
+                              right: Space.md,
+                              top: Space.md,
+                              child: StatusBadge(
+                                t.membersOnly,
+                                tone: BadgeTone.amber,
+                              ),
+                            ),
                         ],
                       ),
                     ),
-                    const SizedBox(width: Space.lg),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                    Padding(
+                      padding: const EdgeInsets.all(Space.lg),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          if (e.membersOnly) ...[
-                            StatusBadge(t.membersOnly, tone: BadgeTone.amber),
-                            const SizedBox(height: 6),
-                          ],
-                          Text(context.tr(e.title), style: AppText.bodyStrong),
-                          const SizedBox(height: Space.xs),
-                          Wrap(
-                            spacing: Space.md,
-                            children: [
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(
-                                    Icons.schedule_rounded,
-                                    size: 14,
-                                    color: AppColors.muted,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(e.time, style: meta.tabular),
-                                ],
-                              ),
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(
-                                    Icons.place_rounded,
-                                    size: 14,
-                                    color: AppColors.muted,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(e.place, style: meta),
-                                ],
-                              ),
-                            ],
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  context.tr(e.title),
+                                  style: AppText.heading,
+                                ),
+                                const SizedBox(height: Space.xs),
+                                Text(
+                                  '${capitalize(weekdayName(lang, day))} · ${e.time} · ${e.place}',
+                                  style: meta.tabular,
+                                ),
+                              ],
+                            ),
                           ),
-                          const SizedBox(height: Space.md),
+                          const SizedBox(width: Space.md),
                           AppButton(
                             label: going ? t.going : t.rsvp,
                             icon: going

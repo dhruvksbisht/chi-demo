@@ -3,7 +3,7 @@
 Clickable demo of the Cockney Hudayetool Islam Society member app. Mobile-first: Android and iOS are the targets; web is a nice-to-have for sharing the demo, never a design driver.
 All data is local mock data; the Juice by MCB checkout is a simulated sandbox flow. The product spec is `assets/CHI Mobile App - Requirements Document.pdf`.
 
-> Migration in progress: the app is being ported from Expo/React Native (`src/`, `package.json`, `app.json`) to Flutter. The TypeScript code is the behavioural reference until each screen is ported; delete the Expo files once the Flutter build reaches parity.
+> The original Expo/React Native version lives on the `expo` branch. `main` is the Flutter app.
 
 ## Product rules from the spec (cite the ID in commits/PRs)
 
@@ -11,7 +11,7 @@ The PDF is the source of truth; these are the rules that shape app code. Priorit
 
 - **Navigation (§10):** five bottom tabs, always in this order: Home, Committee, FAQ, Contacts, Member. Visitors see all five; only Member needs login. Prayer times, Ramadan, Qibla, events, documents open from Home (or a "More" menu), not as extra tabs.
 - **Roles (§2, FR-010, FR-018):** Visitor = public tabs + Member login/Request access. Member status gates access: *Active* can pay; *Inactive* sees balance + "contact the society" and no pay button; *Deceased* has no access. Model the status as an enum and branch on it explicitly.
-- **Access request (FR-011, US-02):** full name, NIC, mobile, email, member number (optional), and a required consent checkbox. Validate Mauritian NIC (14 chars: letter + 12 digits + letter, uppercase) and mobile (+230, 8 digits starting with 5) before submit; show a confirmation screen.
+- **Access request (FR-011, US-02):** full name, NIC, mobile, email, member number (optional), and a required consent checkbox. Validate Mauritian NIC (14 chars: letter + 12 digits + letter or digit) and mobile (+230, 8 digits starting with 5) before submit; show a confirmation screen.
 - **Login (FR-015–017):** email *or* member number + password; biometric unlock offered only after a first successful login; session times out after inactivity (configurable constant); "Forgot password?" on the login screen.
 - **Subscriptions & payment (FR-020–024, PAY-01–07):** dashboard shows status, paid-up-to month, next due amount. 12-month calendar with Paid / Due / Overdue / Upcoming. Member selects months (arrears must be included before future months), sees the MUR total, then Juice checkout. Result screen always ends in one of **success / failed / pending**, never ambiguous. The app never marks months paid on its own in production: payment confirmation is server-side (PAY-03); in the demo the mock store stands in for the server. Paying the same months twice must be impossible (PAY-05). PDF receipt with CHI logo, member no., months, amount, date, Juice ref.
 - **Payments need connectivity (NFR-04):** disable the pay button offline with a message; never queue a payment for later. If Juice is unavailable, show the manual-payment fallback (PAY-15).
@@ -30,7 +30,8 @@ The PDF is the source of truth; these are the rules that shape app code. Priorit
 
 Flutter and its packages ship breaking changes often. Before writing code against a Flutter, Dart or pub.dev API:
 
-1. Check the SDK constraint in `pubspec.yaml` and the installed version (`flutter --version`).
+1. Check the SDK constraint in `pubspec.yaml` and the installed version (`flutter --version`). The SDK lives at `~/development/flutter/bin` (add it to `PATH`).
+   - Since Flutter 3.47, Material and Cupertino are separate packages: import `package:material_ui/material_ui.dart` and `package:cupertino_ui/cupertino_ui.dart`, never the deprecated `package:flutter/material.dart` / `cupertino.dart`. Localization delegates come from those packages too (see `main.dart`); the generated `AppLocalizations.localizationsDelegates` still points at the deprecated copies, so don't use it.
 2. Read the current docs (https://docs.flutter.dev, https://api.flutter.dev) or the package's pub.dev page and changelog for the pinned version. Don't answer from memory.
 
 ## Commands
@@ -99,6 +100,7 @@ The app must look designed for CHI, not generated. Audience includes older membe
 - **Emphasise the CTA.** Each screen has at most one filled primary button (e.g. "Pay with Juice", "Log in", "Get directions"). Secondary actions are outlined or text buttons.
 - **Enlarge the main thing.** Each screen has one obvious hero: next prayer on Home, status + amount due on Member, total on Pay, the tick + receipt no. on payment success. Give it the largest type and the most space.
 - **Show the real thing.** Use real-looking content (prayer times, MUR amounts, months) in mocks and empty states, not lorem ipsum or decorative illustrations.
+- **Real photography over drawn geometry.** Heroes, news, events, centenary and feature cards use photos (`Photo` widget, `Photos` enum in `lib/data/photos.dart`). Only bundle images with a clear free licence (CC0 / CC BY / CC BY-SA from Wikimedia Commons), compress to WebP ≤1200px, and add each to the `Photos` enum so it appears on the Photo credits screen. Text on photos always sits on a scrim (`Scrims`). Never use stock faces for real people (committee keeps initials until CHI supplies portraits). Current photos are placeholders until CHI supplies its own.
 - **Cut filler.** No decorative badges, "New!" chips, gradients, glows, sparkles or ornamental dividers. A badge only appears if it carries state (Active, Paid, Overdue, Manual). Don't label what is already obvious (no "Name:" above a name).
 - **Headlines are specific.** "Asr in 42 min", "2 months overdue · Rs 300", not "Welcome back!" or "Your dashboard". Balance multi-line headlines so a single word isn't orphaned (`TextWrap`-style: shorten copy or set `maxLines` + sensible width).
 - **Typography.** Fraunces for display, Inter for UI, Amiri for Arabic only. No random italics; italic only for a quote or Arabic transliteration. No monospace except reference codes (receipt no., Juice ref). All numbers that line up or change (times, amounts, countdowns, calendars) use tabular figures: `fontFeatures: [FontFeature.tabularFigures()]`.
@@ -117,6 +119,7 @@ Motion explains what changed; it never decorates. Respect reduced motion: when `
 - **Durations.** Taps/press feedback 100 ms; menus, popovers, bottom sheets, dropdowns 150–250 ms; page transitions 250–300 ms. Exits are ~20% shorter than their entrance. Keep everything under 400 ms (Doherty threshold); anything that takes longer needs visible progress.
 - **Press feedback.** Tappable cards and buttons scale to 0.97 on press (no animation while the finger is held; snap back with ease-out on release). Pair important actions with `HapticFeedback.selectionClick()` / `lightImpact()`.
 - **Origin.** Popovers, menus and sheets start at 0.95 scale + fade and grow from their trigger; they shrink back toward it on exit (`transformAlignment` / anchor). Bottom sheets come from the bottom edge.
+- **Photo pages.** Pages led by a picture use `PhotoScreen` (stretch-zoom on overscroll, title on the photo, light status bar).
 - **Lists.** Stagger row entrances by ~30 ms (cap at ~8 rows, then show the rest at once). Only on first load, never on every rebuild or scroll.
 - **Continuity.** Elements that persist between screens (news image → article, month chip → checkout summary, avatar → profile) use `Hero` with a stable tag. Old and new states overlap (cross-fade / `AnimatedSwitcher`) instead of blanking in between. Icons that change (bell on/off, play/pause) cross-fade with a slight scale/blur.
 - **Moving things.** Objects travelling across the screen follow a gentle arc (`MaterialRectArcTween` for Heroes), not a straight diagonal. Toggle knobs may stretch ~12% along the direction of travel. Things that settle can have a small follow-through, not a bounce.

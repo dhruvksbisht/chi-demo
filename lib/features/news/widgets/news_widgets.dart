@@ -4,15 +4,9 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/utils/format.dart';
 import '../../../core/utils/time.dart';
-import '../../../core/widgets/brand.dart';
+import '../../../core/widgets/photo.dart';
 import '../../../core/widgets/ui.dart';
 import '../../../data/content.dart';
-
-Color kindAccent(NewsKind k) => switch (k) {
-  NewsKind.news => AppColors.amber,
-  NewsKind.notice => AppColors.amberLight,
-  NewsKind.janaza => AppColors.sky,
-};
 
 String kindLabel(BuildContext context, NewsKind k) => switch (k) {
   NewsKind.news => context.t.kindNews,
@@ -20,51 +14,48 @@ String kindLabel(BuildContext context, NewsKind k) => switch (k) {
   NewsKind.janaza => context.t.kindJanaza,
 };
 
-/// Patterned art standing in for news photography. Shared by the carousel, the list
-/// thumbnail and the article cover, and carried between them with a Hero.
-class NewsArt extends StatelessWidget {
-  const NewsArt({
-    super.key,
-    required this.item,
-    this.tag = true,
-    this.tile = 36,
-  });
+(Color, Color) kindColors(NewsKind k) => switch (k) {
+  NewsKind.news => (AppColors.surface, AppColors.ink),
+  NewsKind.notice => (AppColors.amber, AppColors.ink),
+  NewsKind.janaza => (AppColors.infoSoft, AppColors.info),
+};
+
+/// The article photo, carried between list, carousel and article with a Hero on an arc.
+class NewsPhoto extends StatelessWidget {
+  const NewsPhoto({super.key, required this.item, this.scrim});
   final NewsItem item;
-  final bool tag;
-  final double tile;
+  final Gradient? scrim;
 
   @override
   Widget build(BuildContext context) => Hero(
-    tag: 'news-art-${item.id}',
+    tag: 'news-photo-${item.id}',
     createRectTween: (a, b) => MaterialRectArcTween(begin: a, end: b),
-    child: Container(
-      color: AppColors.nightRaised,
-      child: Stack(
-        children: [
-          TilePattern(tile: tile, color: kindAccent(item.kind), opacity: 0.45),
-          if (tag)
-            Positioned(
-              left: 0,
-              bottom: 0,
-              child: Container(
-                color: kindAccent(item.kind),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: Space.md,
-                  vertical: Space.xs,
-                ),
-                child: Text(
-                  kindLabel(context, item.kind),
-                  style: AppText.overline.copyWith(color: AppColors.night),
-                ),
-              ),
-            ),
-        ],
-      ),
-    ),
+    child: Photo(item.photo, scrim: scrim),
   );
 }
 
-/// Tall carousel card for the home screen: art panel over a dark caption.
+class KindTag extends StatelessWidget {
+  const KindTag(this.kind, {super.key});
+  final NewsKind kind;
+
+  @override
+  Widget build(BuildContext context) {
+    final (bg, fg) = kindColors(kind);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: Space.sm, vertical: 3),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(Radii.pill),
+      ),
+      child: Text(
+        kindLabel(context, kind),
+        style: AppText.caption.copyWith(color: fg, fontWeight: FontWeight.w600),
+      ),
+    );
+  }
+}
+
+/// Carousel card: full-bleed photo with the headline set on a scrim.
 class NewsSlide extends StatelessWidget {
   const NewsSlide({super.key, required this.item});
   final NewsItem item;
@@ -76,55 +67,42 @@ class NewsSlide extends StatelessWidget {
       onTap: () => context.push('/news/${item.id}'),
       label: context.tr(item.title),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(Radii.md),
-        child: ColoredBox(
-          color: AppColors.night,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              SizedBox(height: 132, child: NewsArt(item: item)),
-              Padding(
-                padding: const EdgeInsets.all(Space.lg),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(
-                      height: 52,
-                      child: Text(
-                        context.tr(item.title),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppText.heading.copyWith(
-                          color: AppColors.onNight,
-                        ),
-                      ),
+        borderRadius: BorderRadius.circular(Radii.lg),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            NewsPhoto(item: item, scrim: Scrims.bottom),
+            Padding(
+              padding: const EdgeInsets.all(Space.lg),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  KindTag(item.kind),
+                  const Spacer(),
+                  Text(
+                    context.tr(item.title),
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppText.heading.copyWith(color: AppColors.onNight),
+                  ),
+                  const SizedBox(height: Space.xs),
+                  Text(
+                    longDate(context.lang, day),
+                    style: AppText.label.copyWith(
+                      color: AppColors.onNightMuted,
                     ),
-                    const SizedBox(height: Space.md),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            longDate(context.lang, day),
-                            style: AppText.label.copyWith(
-                              color: AppColors.onNightMuted,
-                            ),
-                          ),
-                        ),
-                        const Logo(size: 24, lettering: false),
-                      ],
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-/// List row with a small art thumbnail.
+/// List row with a photo thumbnail.
 class NewsCard extends StatelessWidget {
   const NewsCard({super.key, required this.item});
   final NewsItem item;
@@ -133,41 +111,41 @@ class NewsCard extends StatelessWidget {
   Widget build(BuildContext context) => AppCard(
     onTap: () => context.push('/news/${item.id}'),
     label: context.tr(item.title),
-    padding: const EdgeInsets.all(Space.md),
+    padding: const EdgeInsets.all(Space.sm),
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Inner radius = card radius (12) − padding (12) → square-ish; keep a small 4 for softness.
+        // Inner radius = card radius (12) − padding (8).
         ClipRRect(
-          borderRadius: BorderRadius.circular(4),
-          child: SizedBox.square(
-            dimension: 72,
-            child: NewsArt(item: item, tag: false, tile: 24),
-          ),
+          borderRadius: BorderRadius.circular(Radii.lg - Space.sm),
+          child: SizedBox(width: 96, height: 96, child: NewsPhoto(item: item)),
         ),
         const SizedBox(width: Space.md),
         Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '${kindLabel(context, item.kind)} · ${ago(context.t, item.daysAgo)}',
-                style: AppText.caption.copyWith(color: AppColors.muted),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                context.tr(item.title),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: AppText.bodyStrong,
-              ),
-              Text(
-                context.tr(item.summary),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: AppText.label.copyWith(color: AppColors.muted),
-              ),
-            ],
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: Space.xs),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${kindLabel(context, item.kind)} · ${ago(context.t, item.daysAgo)}',
+                  style: AppText.caption.copyWith(color: AppColors.muted),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  context.tr(item.title),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppText.bodyStrong,
+                ),
+                Text(
+                  context.tr(item.summary),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppText.label.copyWith(color: AppColors.muted),
+                ),
+              ],
+            ),
           ),
         ),
       ],

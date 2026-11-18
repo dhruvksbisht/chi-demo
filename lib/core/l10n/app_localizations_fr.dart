@@ -288,7 +288,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get payMonths => 'Payer les mois à venir';
 
   @override
-  String get history => 'Historique et reçus';
+  String get history => 'Notre histoire';
 
   @override
   String get profile => 'Profil et réglages';
@@ -615,4 +615,20 @@ class AppLocalizationsFr extends AppLocalizations {
   String manualMethod(String method) {
     return 'Manuel · $method';
   }
+
+  @override
+  String get gallery => 'Galerie';
+
+  @override
+  String get photoCredits => 'Crédits photo';
+
+  @override
+  String get photoCreditsSub =>
+      'Photos provisoires en attendant celles de la CHI. Toutes les images proviennent de Wikimedia Commons.';
+
+  @override
+  String get visitUs => 'Nous rendre visite';
+
+  @override
+  String get eventsSub => 'Conférences, rencontres et journées communautaires';
 }
