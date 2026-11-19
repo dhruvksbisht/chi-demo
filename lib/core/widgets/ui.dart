@@ -143,14 +143,16 @@ class AppScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.t;
-    final showBar = back || modal || trailing != null;
+    final showBar = back || modal;
+    // Root pages (tabs) have no back button: their action sits on the title row instead of
+    // floating in a bar of its own.
     return Scaffold(
       body: SafeArea(
         bottom: footer == null,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(
+          padding: EdgeInsets.fromLTRB(
             Space.lg,
-            Space.sm,
+            showBar ? Space.sm : Space.xl,
             Space.lg,
             Space.xxl,
           ),
@@ -175,12 +177,21 @@ class AppScreen extends StatelessWidget {
                   ],
                 ),
               ),
-            Text(title, style: AppText.title),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: Text(title, style: AppText.title)),
+                if (!showBar && trailing != null) ...[
+                  const SizedBox(width: Space.sm),
+                  trailing!,
+                ],
+              ],
+            ),
             if (subtitle != null) ...[
               const SizedBox(height: Space.xs),
               Text(
                 subtitle!,
-                style: AppText.body.copyWith(color: AppColors.muted),
+                style: AppText.label.copyWith(color: AppColors.muted),
               ),
             ],
             const SizedBox(height: Space.xl),
@@ -366,12 +377,16 @@ class IconBtn extends StatelessWidget {
     required this.onTap,
     this.badge = false,
     this.onPhoto = false,
+    this.bare = false,
   });
 
   final IconData icon;
   final String label;
   final VoidCallback onTap;
   final bool badge;
+
+  /// No circle: just the icon in a 48 dp hit area, for actions inside list rows.
+  final bool bare;
 
   /// Translucent dark variant for use over photography.
   final bool onPhoto;
@@ -386,20 +401,24 @@ class IconBtn extends StatelessWidget {
         child: Container(
           width: 40,
           height: 40,
-          decoration: BoxDecoration(
-            color: onPhoto ? const Color(0x59000000) : AppColors.surface,
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: onPhoto ? const Color(0x33FFFFFF) : AppColors.line,
-            ),
-          ),
+          decoration: bare
+              ? null
+              : BoxDecoration(
+                  color: onPhoto ? const Color(0x59000000) : AppColors.surface,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: onPhoto ? const Color(0x33FFFFFF) : AppColors.line,
+                  ),
+                ),
           child: Stack(
             alignment: Alignment.center,
             children: [
               Icon(
                 icon,
-                size: 20,
-                color: onPhoto ? AppColors.onNight : AppColors.ink,
+                size: bare ? 22 : 20,
+                color: onPhoto
+                    ? AppColors.onNight
+                    : (bare ? AppColors.inkSoft : AppColors.ink),
               ),
               if (badge)
                 Positioned(
@@ -423,30 +442,15 @@ class IconBtn extends StatelessWidget {
   );
 }
 
-/// Square amber tile holding a row icon.
+/// A row's leading icon: plain and neutral, so the row's text leads, not a coloured tile.
 class IconTile extends StatelessWidget {
-  const IconTile(
-    this.icon, {
-    super.key,
-    this.bg = AppColors.amberSoft,
-    this.fg = AppColors.amberDeep,
-    this.size = 36,
-  });
+  const IconTile(this.icon, {super.key, this.color = AppColors.inkSoft});
   final IconData icon;
-  final Color bg;
-  final Color fg;
-  final double size;
+  final Color color;
 
   @override
-  Widget build(BuildContext context) => Container(
-    width: size,
-    height: size,
-    decoration: BoxDecoration(
-      color: bg,
-      borderRadius: BorderRadius.circular(Radii.sm),
-    ),
-    child: Icon(icon, size: size / 2, color: fg),
-  );
+  Widget build(BuildContext context) =>
+      SizedBox.square(dimension: 24, child: Icon(icon, size: 22, color: color));
 }
 
 /// A list row; stack several inside a zero-padding [AppCard] for a grouped list.
@@ -486,17 +490,20 @@ class ListRow extends StatelessWidget {
         children: [
           if (icon != null) ...[
             IconTile(icon!),
-            const SizedBox(width: Space.md),
+            const SizedBox(width: Space.lg),
           ],
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: AppText.bodyStrong),
+                Text(title, style: AppText.bodyMedium),
                 if (subtitle != null)
                   Text(
                     subtitle!,
-                    style: AppText.label.copyWith(color: AppColors.muted),
+                    style: AppText.label.copyWith(
+                      color: AppColors.muted,
+                      fontWeight: FontWeight.w400,
+                    ),
                   ),
               ],
             ),

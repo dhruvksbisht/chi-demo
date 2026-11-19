@@ -222,22 +222,19 @@ class _Dashboard extends ConsumerWidget {
     return AppScreen(
       title: member.name,
       subtitle:
-          '${t.tabMember} ${member.number} · ${t.memberSince} ${member.since}',
+          '${member.number} · ${context.tr(member.category)} · ${t.memberSince} ${member.since}',
       trailing: IconBtn(
         icon: Icons.settings_rounded,
         label: t.profile,
         onTap: () => context.push('/profile'),
       ),
       children: [
-        Wrap(
-          spacing: Space.sm,
-          children: [
-            StatusBadge(
-              active ? t.active : t.inactive,
-              tone: active ? BadgeTone.success : BadgeTone.danger,
-            ),
-            StatusBadge(context.tr(member.category)),
-          ],
+        Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: StatusBadge(
+            active ? t.active : t.inactive,
+            tone: active ? BadgeTone.success : BadgeTone.danger,
+          ),
         ),
         AppCard(
           tone: CardTone.night,
@@ -285,9 +282,8 @@ class _Dashboard extends ConsumerWidget {
                   Expanded(
                     child: _Stat(
                       t.nextDue,
-                      next == null
-                          ? '–'
-                          : '${label(next)} · ${mur(next.amount)}',
+                      label(next),
+                      detail: next == null ? null : mur(next.amount),
                     ),
                   ),
                 ],
@@ -370,9 +366,12 @@ class _Dashboard extends ConsumerWidget {
 }
 
 class _Stat extends StatelessWidget {
-  const _Stat(this.label, this.value);
+  const _Stat(this.label, this.value, {this.detail});
   final String label;
   final String value;
+
+  /// Second line, e.g. the amount, so the month never wraps mid-phrase.
+  final String? detail;
 
   @override
   Widget build(BuildContext context) => Column(
@@ -386,6 +385,11 @@ class _Stat extends StatelessWidget {
         value,
         style: AppText.bodyStrong.copyWith(color: AppColors.onNight).tabular,
       ),
+      if (detail case final detail?)
+        Text(
+          detail,
+          style: AppText.label.copyWith(color: AppColors.onNightMuted).tabular,
+        ),
     ],
   );
 }

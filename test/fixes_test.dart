@@ -154,7 +154,7 @@ void main() {
       // Select one more month than the default, so the stale choice would be 3.
       await tester.tap(find.textContaining('December 2026'));
       await _settle(tester);
-      expect(find.text('MUR 450'), findsOneWidget);
+      expect(find.text(mur(450)), findsOneWidget);
 
       await tester.tap(find.text('Pay with Juice'));
       await _settle(tester);
@@ -166,8 +166,8 @@ void main() {
       await tester.binding.handlePopRoute(); // Android back
       await _settle(tester);
       // Only the next due month is offered by default, not three future months.
-      expect(find.text('MUR 150'), findsWidgets);
-      expect(find.text('MUR 450'), findsNothing);
+      expect(find.text(mur(150)), findsWidgets);
+      expect(find.text(mur(450)), findsNothing);
     });
 
     testWidgets('offline: pay button is disabled with a message (NFR-04)', (

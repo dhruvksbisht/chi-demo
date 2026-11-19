@@ -102,9 +102,10 @@ void main() {
 
   group('format', () {
     test('mur groups thousands', () {
-      expect(mur(150), 'MUR 150');
-      expect(mur(46350), 'MUR 46,350');
-      expect(mur(1234567), 'MUR 1,234,567');
+      // Non-breaking space: an amount never splits across lines.
+      expect(mur(150), 'MUR 150');
+      expect(mur(46350), 'MUR 46,350');
+      expect(mur(1234567), 'MUR 1,234,567');
     });
 
     test('monthsLabel spans a range', () {

@@ -137,10 +137,9 @@ class AppLocalizationsFr extends AppLocalizations {
       'Boussole indisponible sur cet appareil. Utilisez la direction ci-dessous.';
 
   @override
-  String get committeeSub => 'Comité de direction 2025–2027';
-
-  @override
-  String get faqSub => 'Réponses aux questions fréquentes';
+  String committeeSub(int count) {
+    return 'Mandat 2025–2027 · $count membres';
+  }
 
   @override
   String get searchQuestions => 'Rechercher';
@@ -150,9 +149,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get all => 'Tout';
-
-  @override
-  String get contactsSub => 'Venez nous voir, appelez ou écrivez-nous';
 
   @override
   String get directions => 'Itinéraire';
@@ -310,6 +306,19 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String rejectTitle(String name) {
     return 'Refuser la demande de $name ?';
+  }
+
+  @override
+  String get callOrWhatsapp => 'Appel ou WhatsApp';
+
+  @override
+  String openUntil(String time) {
+    return 'Ouvert · jusqu’à $time';
+  }
+
+  @override
+  String opensAt(String when) {
+    return 'Fermé · ouvre $when';
   }
 
   @override

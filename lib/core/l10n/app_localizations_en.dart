@@ -136,10 +136,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Compass unavailable on this device. Use the bearing below.';
 
   @override
-  String get committeeSub => 'Management committee 2025–2027';
-
-  @override
-  String get faqSub => 'Answers to common questions';
+  String committeeSub(int count) {
+    return '2025–2027 term · $count members';
+  }
 
   @override
   String get searchQuestions => 'Search questions';
@@ -149,9 +148,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get all => 'All';
-
-  @override
-  String get contactsSub => 'Visit, call or write to us';
 
   @override
   String get directions => 'Get directions';
@@ -308,6 +304,19 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String rejectTitle(String name) {
     return 'Reject $name’s request?';
+  }
+
+  @override
+  String get callOrWhatsapp => 'Call or WhatsApp';
+
+  @override
+  String openUntil(String time) {
+    return 'Open now · until $time';
+  }
+
+  @override
+  String opensAt(String when) {
+    return 'Closed · opens $when';
   }
 
   @override

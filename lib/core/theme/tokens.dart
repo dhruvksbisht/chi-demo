@@ -101,6 +101,15 @@ abstract final class AppText {
     height: 22 / 15,
     color: AppColors.ink,
   );
+
+  /// List-row titles: a step lighter than [bodyStrong] so dense lists stay calm.
+  static const bodyMedium = TextStyle(
+    fontFamily: Fonts.ui,
+    fontWeight: FontWeight.w500,
+    fontSize: 15,
+    height: 22 / 15,
+    color: AppColors.ink,
+  );
   static const bodyStrong = TextStyle(
     fontFamily: Fonts.ui,
     fontWeight: FontWeight.w600,

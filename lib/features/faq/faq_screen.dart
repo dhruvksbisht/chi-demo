@@ -27,94 +27,209 @@ class _FaqScreenState extends State<FaqScreen> {
   Widget build(BuildContext context) {
     final t = context.t;
     final q = _query.text.trim().toLowerCase();
-    final visible = [
-      for (final (i, f) in faqs.indexed)
-        if ((_category == null || f.category == _category) &&
-            (q.isEmpty ||
-                '${context.tr(f.q)} ${context.tr(f.a)}'.toLowerCase().contains(
-                  q,
-                )))
-          (i, f),
-    ];
-    final chips = <(FaqCategory?, String)>[
-      (null, t.all),
-      for (final c in FaqCategory.values) (c, context.tr(c.label)),
-    ];
+    bool matches(Faq f) =>
+        (_category == null || f.category == _category) &&
+        (q.isEmpty ||
+            '${context.tr(f.q)} ${context.tr(f.a)}'.toLowerCase().contains(q));
+
+    // Grouped by category (Miller's law): short lists under a quiet heading.
+    final groups = [
+      for (final c in FaqCategory.values)
+        (
+          category: c,
+          items: [
+            for (final (i, f) in faqs.indexed)
+              if (f.category == c && matches(f)) (i, f),
+          ],
+        ),
+    ].where((g) => g.items.isNotEmpty).toList();
 
     return AppScreen(
       title: t.tabFaq,
-      subtitle: t.faqSub,
       children: [
-        AppField(
-          label: t.searchQuestions,
+        _SearchField(
           controller: _query,
+          label: t.searchQuestions,
           hint: t.searchHint,
-          textInputAction: TextInputAction.search,
-          onChanged: (_) => setState(() {}),
+          onChanged: () => setState(() {}),
         ),
-        SizedBox(
-          height: 44,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            children: gap(
-              [
-                for (final (c, label) in chips)
-                  Pressable(
-                    onTap: () => setState(() => _category = c),
-                    selected: c == _category,
-                    label: label,
-                    child: AnimatedContainer(
-                      duration: reduceMotion(context)
-                          ? Duration.zero
-                          : Motion.short,
-                      alignment: Alignment.center,
-                      padding: const EdgeInsets.symmetric(horizontal: Space.lg),
-                      decoration: BoxDecoration(
-                        color: c == _category
-                            ? AppColors.amberSoft
-                            : AppColors.surface,
-                        borderRadius: BorderRadius.circular(Radii.pill),
-                        border: Border.all(
-                          color: c == _category
-                              ? AppColors.amber
-                              : AppColors.line,
-                        ),
-                      ),
-                      child: Text(
-                        label,
-                        style: AppText.label.copyWith(
-                          color: c == _category
-                              ? AppColors.ink
-                              : AppColors.inkSoft,
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-              Space.sm,
-              axis: Axis.horizontal,
+        _Chips<FaqCategory?>(
+          options: [
+            (null, t.all),
+            for (final c in FaqCategory.values) (c, context.tr(c.label)),
+          ],
+          value: _category,
+          onChanged: (c) => setState(() => _category = c),
+        ),
+        if (groups.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: Space.xl),
+            child: Text(
+              t.noResults,
+              textAlign: TextAlign.center,
+              style: AppText.body.copyWith(color: AppColors.muted),
             ),
           ),
-        ),
-        if (visible.isEmpty)
-          Text(
-            t.noResults,
-            style: AppText.body.copyWith(color: AppColors.muted),
-          ),
-        Column(
-          children: gap([
-            for (final (i, f) in visible)
-              _FaqItem(
-                question: context.tr(f.q),
-                answer: context.tr(f.a),
-                expanded: _open == i,
-                onTap: () => setState(() => _open = _open == i ? null : i),
+        for (final g in groups)
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  Space.xs,
+                  Space.sm,
+                  Space.xs,
+                  Space.sm,
+                ),
+                child: Text(
+                  context.tr(g.category.label),
+                  style: AppText.overline,
+                ),
               ),
-          ], Space.sm),
-        ),
+              AppCard(
+                padding: EdgeInsets.zero,
+                child: Column(
+                  children: [
+                    for (final (n, (i, f)) in g.items.indexed)
+                      _FaqItem(
+                        question: context.tr(f.q),
+                        answer: context.tr(f.a),
+                        expanded: _open == i,
+                        divider: n < g.items.length - 1,
+                        onTap: () =>
+                            setState(() => _open = _open == i ? null : i),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
       ],
     );
   }
+}
+
+class _SearchField extends StatelessWidget {
+  const _SearchField({
+    required this.controller,
+    required this.label,
+    required this.hint,
+    required this.onChanged,
+  });
+  final TextEditingController controller;
+  final String label;
+  final String hint;
+  final VoidCallback onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    const border = OutlineInputBorder(
+      borderRadius: BorderRadius.all(Radius.circular(Radii.md)),
+      borderSide: BorderSide.none,
+    );
+    return Semantics(
+      label: label,
+      textField: true,
+      child: TextField(
+        controller: controller,
+        onChanged: (_) => onChanged(),
+        textInputAction: TextInputAction.search,
+        style: AppText.body,
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: AppText.body.copyWith(color: AppColors.muted),
+          prefixIcon: const Icon(
+            Icons.search_rounded,
+            size: 20,
+            color: AppColors.muted,
+          ),
+          suffixIcon: controller.text.isEmpty
+              ? null
+              : IconButton(
+                  tooltip: context.t.close,
+                  icon: const Icon(
+                    Icons.close_rounded,
+                    size: 20,
+                    color: AppColors.muted,
+                  ),
+                  onPressed: () {
+                    controller.clear();
+                    onChanged();
+                  },
+                ),
+          filled: true,
+          fillColor: AppColors.sunken,
+          contentPadding: const EdgeInsets.symmetric(vertical: 14),
+          border: border,
+          enabledBorder: border,
+          focusedBorder: const OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(Radii.md)),
+            borderSide: BorderSide(color: AppColors.amber, width: 1.5),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Category filter. Unselected chips are quiet; the current one is the amber state.
+class _Chips<T> extends StatelessWidget {
+  const _Chips({
+    required this.options,
+    required this.value,
+    required this.onChanged,
+  });
+  final List<(T, String)> options;
+  final T value;
+  final ValueChanged<T> onChanged;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    height: 48,
+    child: ListView(
+      scrollDirection: Axis.horizontal,
+      // Chips scroll out to the screen edge instead of being cut at the page margin.
+      clipBehavior: Clip.none,
+      children: gap(
+        [
+          for (final (v, label) in options)
+            Pressable(
+              onTap: () => onChanged(v),
+              selected: v == value,
+              label: label,
+              child: Center(
+                child: AnimatedContainer(
+                  duration: reduceMotion(context)
+                      ? Duration.zero
+                      : Motion.short,
+                  height: 36,
+                  alignment: Alignment.center,
+                  padding: const EdgeInsets.symmetric(horizontal: Space.lg),
+                  decoration: BoxDecoration(
+                    color: v == value ? AppColors.amber : Colors.transparent,
+                    borderRadius: BorderRadius.circular(Radii.pill),
+                    border: Border.all(
+                      color: v == value ? AppColors.amber : AppColors.line,
+                    ),
+                  ),
+                  child: Text(
+                    label,
+                    style: AppText.label.copyWith(
+                      color: v == value ? AppColors.ink : AppColors.inkSoft,
+                      fontWeight: v == value
+                          ? FontWeight.w600
+                          : FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
+        Space.sm,
+        axis: Axis.horizontal,
+      ),
+    ),
+  );
 }
 
 class _FaqItem extends StatelessWidget {
@@ -122,25 +237,25 @@ class _FaqItem extends StatelessWidget {
     required this.question,
     required this.answer,
     required this.expanded,
+    required this.divider,
     required this.onTap,
   });
   final String question;
   final String answer;
   final bool expanded;
+  final bool divider;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final duration = reduceMotion(context) ? Duration.zero : Motion.short;
-    return AnimatedContainer(
-      duration: duration,
-      curve: Motion.move,
+    return DecoratedBox(
       decoration: BoxDecoration(
-        color: expanded ? AppColors.amberSoft : AppColors.surface,
-        borderRadius: BorderRadius.circular(Radii.lg),
-        border: Border.all(
-          color: expanded ? AppColors.amberLine : AppColors.line,
-        ),
+        border: divider
+            ? const Border(
+                bottom: BorderSide(color: AppColors.line, width: 0.5),
+              )
+            : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -151,19 +266,24 @@ class _FaqItem extends StatelessWidget {
               onTap: onTap,
               label: question,
               child: Padding(
-                padding: const EdgeInsets.all(Space.lg),
+                padding: const EdgeInsets.fromLTRB(
+                  Space.lg,
+                  Space.lg,
+                  Space.md,
+                  Space.lg,
+                ),
                 child: Row(
                   children: [
-                    Expanded(child: Text(question, style: AppText.bodyStrong)),
+                    Expanded(child: Text(question, style: AppText.bodyMedium)),
                     const SizedBox(width: Space.md),
                     AnimatedRotation(
-                      turns: expanded ? 0.125 : 0,
+                      turns: expanded ? 0.5 : 0,
                       duration: duration,
                       curve: Motion.move,
                       child: const Icon(
-                        Icons.add_rounded,
+                        Icons.expand_more_rounded,
                         size: 22,
-                        color: AppColors.amberDeep,
+                        color: AppColors.muted,
                       ),
                     ),
                   ],
@@ -181,7 +301,7 @@ class _FaqItem extends StatelessWidget {
                     padding: const EdgeInsets.fromLTRB(
                       Space.lg,
                       0,
-                      Space.lg,
+                      Space.xxl,
                       Space.lg,
                     ),
                     child: Text(

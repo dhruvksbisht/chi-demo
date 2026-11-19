@@ -13,102 +13,121 @@ String _initials(String name) => name
     .map((p) => p[0])
     .join();
 
+/// One list, the president first and set larger. Initials stand in for portraits until CHI
+/// supplies them; colour stays neutral so roles, not decoration, carry the hierarchy.
 class CommitteeScreen extends StatelessWidget {
   const CommitteeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final t = context.t;
-    final lead = committee.first;
-    final rest = committee.skip(1).toList();
     return AppScreen(
       title: t.tabCommittee,
-      subtitle: t.committeeSub,
+      subtitle: t.committeeSub(committee.length),
       children: [
-        AppCard(
-          tone: CardTone.amber,
-          child: Row(
-            children: [
-              _Avatar(lead.name, size: 60, bg: AppColors.surface),
-              const SizedBox(width: Space.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      context.tr(lead.role),
-                      style: AppText.overline.copyWith(
-                        color: AppColors.amberDeep,
-                      ),
-                    ),
-                    Text(lead.name, style: AppText.heading),
-                  ],
-                ),
-              ),
-              _Contact(phone: lead.phone, email: lead.email),
-            ],
-          ),
-        ),
         AppCard(
           padding: EdgeInsets.zero,
           child: Column(
             children: [
-              for (final (i, m) in rest.indexed)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: Space.lg,
-                    vertical: Space.md,
-                  ),
-                  decoration: BoxDecoration(
-                    border: i < rest.length - 1
-                        ? const Border(
-                            bottom: BorderSide(
-                              color: AppColors.line,
-                              width: 0.5,
-                            ),
-                          )
-                        : null,
-                  ),
-                  child: Row(
-                    children: [
-                      _Avatar(m.name),
-                      const SizedBox(width: Space.md),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(m.name, style: AppText.bodyStrong),
-                            Text(
-                              context.tr(m.role),
-                              style: AppText.label.copyWith(
-                                color: AppColors.muted,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      _Contact(phone: m.phone, email: m.email),
-                    ],
-                  ),
+              for (final (i, m) in committee.indexed)
+                _MemberRow(
+                  member: m,
+                  lead: i == 0,
+                  divider: i < committee.length - 1,
                 ),
             ],
           ),
         ),
-        Text(
-          t.committeeConsent,
-          textAlign: TextAlign.center,
-          style: AppText.caption.copyWith(color: AppColors.muted),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: Space.xs),
+          child: Text(
+            t.committeeConsent,
+            style: AppText.caption.copyWith(color: AppColors.muted),
+          ),
         ),
       ],
     );
   }
 }
 
+class _MemberRow extends StatelessWidget {
+  const _MemberRow({
+    required this.member,
+    required this.lead,
+    required this.divider,
+  });
+  final CommitteeMember member;
+  final bool lead;
+  final bool divider;
+
+  @override
+  Widget build(BuildContext context) {
+    final role = context.tr(member.role);
+    return Container(
+      padding: EdgeInsets.fromLTRB(
+        Space.lg,
+        lead ? Space.lg : Space.md,
+        Space.sm,
+        lead ? Space.lg : Space.md,
+      ),
+      decoration: BoxDecoration(
+        border: divider
+            ? const Border(
+                bottom: BorderSide(color: AppColors.line, width: 0.5),
+              )
+            : null,
+      ),
+      child: Row(
+        children: [
+          _Avatar(member.name, size: lead ? 56 : 40),
+          const SizedBox(width: Space.lg),
+          Expanded(
+            child: lead
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(role, style: AppText.overline),
+                      Text(member.name, style: AppText.heading),
+                    ],
+                  )
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(member.name, style: AppText.bodyMedium),
+                      Text(
+                        role,
+                        style: AppText.label.copyWith(
+                          color: AppColors.muted,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ],
+                  ),
+          ),
+          if (member.phone case final phone?)
+            IconBtn(
+              bare: true,
+              icon: Icons.call_rounded,
+              label: '${context.t.call} ${member.name}',
+              onTap: () => launchUrl(Uri.parse('tel:$phone')),
+            ),
+          if (member.email case final email?)
+            IconBtn(
+              bare: true,
+              icon: Icons.mail_rounded,
+              label: '${context.t.email} ${member.name}',
+              onTap: () => launchUrl(Uri.parse('mailto:$email')),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
 class _Avatar extends StatelessWidget {
-  const _Avatar(this.name, {this.size = 44, this.bg = AppColors.amberSoft});
+  const _Avatar(this.name, {required this.size});
   final String name;
   final double size;
-  final Color bg;
 
   @override
   Widget build(BuildContext context) => ExcludeSemantics(
@@ -116,40 +135,17 @@ class _Avatar extends StatelessWidget {
       width: size,
       height: size,
       alignment: Alignment.center,
-      decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
+      decoration: const BoxDecoration(
+        color: AppColors.sunken,
+        shape: BoxShape.circle,
+      ),
       child: Text(
         _initials(name),
-        style:
-            (size > 50
-                    ? AppText.heading
-                    : AppText.label.copyWith(fontWeight: FontWeight.w600))
-                .copyWith(color: AppColors.amberDeep),
+        style: (size > 48 ? AppText.heading : AppText.bodyStrong).copyWith(
+          fontFamily: Fonts.display,
+          color: AppColors.inkSoft,
+        ),
       ),
     ),
-  );
-}
-
-class _Contact extends StatelessWidget {
-  const _Contact({this.phone, this.email});
-  final String? phone;
-  final String? email;
-
-  @override
-  Widget build(BuildContext context) => Row(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      if (phone != null)
-        IconBtn(
-          icon: Icons.call_rounded,
-          label: context.t.call,
-          onTap: () => launchUrl(Uri.parse('tel:$phone')),
-        ),
-      if (email != null)
-        IconBtn(
-          icon: Icons.mail_rounded,
-          label: context.t.email,
-          onTap: () => launchUrl(Uri.parse('mailto:$email')),
-        ),
-    ],
   );
 }

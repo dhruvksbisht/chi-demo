@@ -1,3 +1,4 @@
+import 'package:chi/core/utils/format.dart';
 import 'package:chi/main.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -23,8 +24,8 @@ void main() {
     await _pumpApp(tester);
     expect(find.text('Assalamu alaykum'), findsOneWidget);
     for (final (tab, marker) in [
-      ('Committee', 'Management committee 2025–2027'),
-      ('FAQ', 'Answers to common questions'),
+      ('Committee', '2025–2027 term · 7 members'),
+      ('FAQ', 'How do I become a member?'),
       ('Contacts', 'Get directions'),
       ('Member', 'Member login'),
     ]) {
@@ -55,7 +56,7 @@ void main() {
 
     await tester.tap(find.text('Pay upcoming months'));
     await _settle(tester);
-    expect(find.text('MUR 300'), findsOneWidget); // one overdue + current month
+    expect(find.text(mur(300)), findsOneWidget); // one overdue + current month
 
     await tester.tap(find.text('Pay with Juice'));
     await _settle(tester);

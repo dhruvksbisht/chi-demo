@@ -347,14 +347,8 @@ abstract class AppLocalizations {
   /// No description provided for @committeeSub.
   ///
   /// In en, this message translates to:
-  /// **'Management committee 2025–2027'**
-  String get committeeSub;
-
-  /// No description provided for @faqSub.
-  ///
-  /// In en, this message translates to:
-  /// **'Answers to common questions'**
-  String get faqSub;
+  /// **'2025–2027 term · {count} members'**
+  String committeeSub(int count);
 
   /// No description provided for @searchQuestions.
   ///
@@ -373,12 +367,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'All'**
   String get all;
-
-  /// No description provided for @contactsSub.
-  ///
-  /// In en, this message translates to:
-  /// **'Visit, call or write to us'**
-  String get contactsSub;
 
   /// No description provided for @directions.
   ///
@@ -679,6 +667,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Reject {name}’s request?'**
   String rejectTitle(String name);
+
+  /// No description provided for @callOrWhatsapp.
+  ///
+  /// In en, this message translates to:
+  /// **'Call or WhatsApp'**
+  String get callOrWhatsapp;
+
+  /// No description provided for @openUntil.
+  ///
+  /// In en, this message translates to:
+  /// **'Open now · until {time}'**
+  String openUntil(String time);
+
+  /// No description provided for @opensAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed · opens {when}'**
+  String opensAt(String when);
 
   /// No description provided for @paymentHistory.
   ///

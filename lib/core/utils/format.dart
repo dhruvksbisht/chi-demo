@@ -128,14 +128,15 @@ String longDate(Lang lang, Ymd day) =>
 
 Ymd ymdOf(DateTime instant) => muToday(instant);
 
-/// "MUR 1,350" with Mauritian grouping.
+/// "MUR 1,350" with Mauritian grouping. The space is non-breaking so an amount never splits
+/// across lines ("MUR" / "150").
 String mur(int amount) {
   final digits = amount.abs().toString();
   final grouped = digits.replaceAllMapped(
     RegExp(r'\B(?=(\d{3})+(?!\d))'),
     (_) => ',',
   );
-  return 'MUR ${amount < 0 ? '-' : ''}$grouped';
+  return 'MUR ${amount < 0 ? '-' : ''}$grouped';
 }
 
 /// "October 2026 – January 2027" from month keys like "2026-10".
