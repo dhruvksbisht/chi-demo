@@ -72,225 +72,292 @@ class HomeScreen extends ConsumerWidget {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark,
       child: Scaffold(
-        body: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            // ---- Photo hero with greeting; the prayer card overlaps its bottom edge.
-            // Light status bar only while the photo is under it; dark once scrolled.
-            AnnotatedRegion<SystemUiOverlayStyle>(
-              value: SystemUiOverlayStyle.light,
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  SizedBox(
-                    height: _heroHeight + top,
-                    width: double.infinity,
-                    child: NowBuilder(
-                      interval: const Duration(minutes: 1),
-                      builder: (context, now) => AnimatedSwitcher(
-                        duration: reduceMotion(context)
-                            ? Duration.zero
-                            : const Duration(milliseconds: 600),
-                        child: Photo(
-                          _isNight(now)
-                              ? Photos.portLouisNight
-                              : Photos.jummahStreet,
-                          key: ValueKey(_isNight(now)),
-                          alignment: const Alignment(0, -0.2),
-                          scrim: Scrims.both,
+        body: _StatusBarBackdrop(
+          threshold: _heroHeight,
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              // ---- Photo hero with greeting; the prayer card overlaps its bottom edge.
+              // Light status bar only while the photo is under it; dark once scrolled.
+              AnnotatedRegion<SystemUiOverlayStyle>(
+                value: SystemUiOverlayStyle.light,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    SizedBox(
+                      height: _heroHeight + top,
+                      width: double.infinity,
+                      child: NowBuilder(
+                        interval: const Duration(minutes: 1),
+                        builder: (context, now) => AnimatedSwitcher(
+                          duration: reduceMotion(context)
+                              ? Duration.zero
+                              : const Duration(milliseconds: 600),
+                          child: Photo(
+                            _isNight(now)
+                                ? Photos.portLouisNight
+                                : Photos.jummahStreet,
+                            key: ValueKey(_isNight(now)),
+                            alignment: const Alignment(0, -0.2),
+                            scrim: Scrims.both,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(
-                      Space.lg,
-                      top + Space.sm,
-                      Space.lg,
-                      0,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            const Logo(size: 44),
-                            const Spacer(),
-                            _LangSwitch(
-                              value: ref.watch(langProvider),
-                              onChanged: ref.read(appProvider.notifier).setLang,
-                            ),
-                            const SizedBox(width: Space.xs),
-                            IconBtn(
-                              icon: Icons.notifications_rounded,
-                              label: t.notifications,
-                              badge: !inboxRead,
-                              onPhoto: true,
-                              onTap: () => context.push('/notifications'),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 96),
-                        Text(
-                          '${capitalize(weekdayName(lang, today))} ${longDate(lang, today)}',
-                          style: AppText.label.copyWith(
-                            color: AppColors.onNightMuted,
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(
+                        Space.lg,
+                        top + Space.sm,
+                        Space.lg,
+                        0,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Logo(size: 44),
+                              const Spacer(),
+                              _LangSwitch(
+                                value: ref.watch(langProvider),
+                                onChanged: ref
+                                    .read(appProvider.notifier)
+                                    .setLang,
+                              ),
+                              const SizedBox(width: Space.xs),
+                              IconBtn(
+                                icon: Icons.notifications_rounded,
+                                label: t.notifications,
+                                badge: !inboxRead,
+                                onPhoto: true,
+                                onTap: () => context.push('/notifications'),
+                              ),
+                            ],
                           ),
-                        ),
-                        const SizedBox(height: Space.xs),
-                        Text(
-                          t.assalamu,
-                          style: AppText.hero.copyWith(
-                            color: AppColors.onNight,
+                          const SizedBox(height: 96),
+                          Text(
+                            '${capitalize(weekdayName(lang, today))} ${longDate(lang, today)}',
+                            style: AppText.label.copyWith(
+                              color: AppColors.onNightMuted,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: Space.xs),
-                        Text(
-                          '${hijri.d} ${hijriMonthName(hijri.m)} ${hijri.y} AH',
-                          style: AppText.label.copyWith(color: AppColors.amber),
-                        ),
-                        const SizedBox(height: Space.lg),
-                        const _PrayerCard(),
-                      ],
+                          const SizedBox(height: Space.xs),
+                          Text(
+                            t.assalamu,
+                            style: AppText.hero.copyWith(
+                              color: AppColors.onNight,
+                            ),
+                          ),
+                          const SizedBox(height: Space.xs),
+                          Text(
+                            '${hijri.d} ${hijriMonthName(hijri.m)} ${hijri.y} AH',
+                            style: AppText.label.copyWith(
+                              color: AppColors.amber,
+                            ),
+                          ),
+                          const SizedBox(height: Space.lg),
+                          const _PrayerCard(),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                Space.lg,
-                Space.xl,
-                Space.lg,
-                Space.xxl,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: gap([
-                  // ---- Quick tools: one row of chips (Hick's law: few, clear choices).
-                  SizedBox(
-                    height: 48,
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      clipBehavior: Clip.none,
-                      children: gap(
-                        [
-                          for (final (icon, label, route) in quick)
-                            Pressable(
-                              onTap: () => context.push(route),
-                              label: label,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: Space.md,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppColors.surface,
-                                  borderRadius: BorderRadius.circular(
-                                    Radii.pill,
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  Space.lg,
+                  Space.xl,
+                  Space.lg,
+                  Space.xxl,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: gap([
+                    // ---- Quick tools: one row of chips (Hick's law: few, clear choices).
+                    SizedBox(
+                      height: 48,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        clipBehavior: Clip.none,
+                        children: gap(
+                          [
+                            for (final (icon, label, route) in quick)
+                              Pressable(
+                                onTap: () => context.push(route),
+                                label: label,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: Space.md,
                                   ),
-                                  border: Border.all(color: AppColors.line),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.surface,
+                                    borderRadius: BorderRadius.circular(
+                                      Radii.pill,
+                                    ),
+                                    border: Border.all(color: AppColors.line),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        icon,
+                                        size: 18,
+                                        color: AppColors.amberDeep,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(label, style: AppText.label),
+                                    ],
+                                  ),
                                 ),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      icon,
-                                      size: 18,
+                              ),
+                          ],
+                          Space.sm,
+                          axis: Axis.horizontal,
+                        ),
+                      ),
+                    ),
+                    if (notice != null)
+                      AppCard(
+                        tone: CardTone.amber,
+                        onTap: () => context.push('/news/${notice.id}'),
+                        label: context.tr(notice.title),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: Space.lg,
+                          vertical: Space.md,
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.campaign_rounded,
+                              color: AppColors.amberDeep,
+                            ),
+                            const SizedBox(width: Space.md),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    t.urgent,
+                                    style: AppText.overline.copyWith(
                                       color: AppColors.amberDeep,
                                     ),
-                                    const SizedBox(width: 6),
-                                    Text(label, style: AppText.label),
-                                  ],
-                                ),
-                              ),
-                            ),
-                        ],
-                        Space.sm,
-                        axis: Axis.horizontal,
-                      ),
-                    ),
-                  ),
-                  if (notice != null)
-                    AppCard(
-                      tone: CardTone.amber,
-                      onTap: () => context.push('/news/${notice.id}'),
-                      label: context.tr(notice.title),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: Space.lg,
-                        vertical: Space.md,
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.campaign_rounded,
-                            color: AppColors.amberDeep,
-                          ),
-                          const SizedBox(width: Space.md),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  t.urgent,
-                                  style: AppText.overline.copyWith(
-                                    color: AppColors.amberDeep,
                                   ),
-                                ),
-                                Text(
-                                  context.tr(notice.title),
-                                  style: AppText.bodyStrong,
-                                ),
-                              ],
-                            ),
-                          ),
-                          const Icon(
-                            Icons.chevron_right_rounded,
-                            color: AppColors.amberDeep,
-                          ),
-                        ],
-                      ),
-                    ),
-                  Section(
-                    title: t.latestNews,
-                    action: t.seeAll,
-                    onAction: () => context.push('/news'),
-                    children: [
-                      SizedBox(
-                        height: 280,
-                        child: PageView(
-                          controller: PageController(viewportFraction: 0.84),
-                          padEnds: false,
-                          clipBehavior: Clip.none,
-                          children: [
-                            for (final item in news)
-                              Padding(
-                                padding: const EdgeInsets.only(right: Space.md),
-                                child: NewsSlide(item: item),
+                                  Text(
+                                    context.tr(notice.title),
+                                    style: AppText.bodyStrong,
+                                  ),
+                                ],
                               ),
+                            ),
+                            const Icon(
+                              Icons.chevron_right_rounded,
+                              color: AppColors.amberDeep,
+                            ),
                           ],
                         ),
                       ),
-                    ],
-                  ),
-                  Section(
-                    title: t.explore,
-                    children: [
-                      for (final f in features)
-                        _FeatureCard(
-                          title: f.title,
-                          detail: f.detail,
-                          photo: f.photo,
-                          onTap: () => context.push(f.route),
+                    Section(
+                      title: t.latestNews,
+                      action: t.seeAll,
+                      onAction: () => context.push('/news'),
+                      children: [
+                        SizedBox(
+                          height: 280,
+                          child: PageView(
+                            controller: PageController(viewportFraction: 0.84),
+                            padEnds: false,
+                            clipBehavior: Clip.none,
+                            children: [
+                              for (final item in news)
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    right: Space.md,
+                                  ),
+                                  child: NewsSlide(item: item),
+                                ),
+                            ],
+                          ),
                         ),
-                    ],
-                  ),
-                ], Space.xl),
+                      ],
+                    ),
+                    Section(
+                      title: t.explore,
+                      children: [
+                        for (final f in features)
+                          _FeatureCard(
+                            title: f.title,
+                            detail: f.detail,
+                            photo: f.photo,
+                            onTap: () => context.push(f.route),
+                          ),
+                      ],
+                    ),
+                  ], Space.xl),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
+}
+
+/// Paper-coloured strip behind the status bar once the hero photo has scrolled out from under
+/// it, so news and cards don't run beneath the clock. Hidden while the photo is still there.
+class _StatusBarBackdrop extends StatefulWidget {
+  const _StatusBarBackdrop({required this.threshold, required this.child});
+
+  /// Scroll offset at which the photo's bottom edge passes under the status bar.
+  final double threshold;
+  final Widget child;
+
+  @override
+  State<_StatusBarBackdrop> createState() => _StatusBarBackdropState();
+}
+
+class _StatusBarBackdropState extends State<_StatusBarBackdrop> {
+  bool _shown = false;
+
+  bool _onScroll(ScrollNotification n) {
+    // Only the page itself; the horizontal news carousel scrolls too.
+    if (n.depth != 0 || n.metrics.axis != Axis.vertical) return false;
+    final shown = n.metrics.pixels >= widget.threshold;
+    if (shown != _shown) setState(() => _shown = shown);
+    return false;
+  }
+
+  @override
+  Widget build(BuildContext context) =>
+      NotificationListener<ScrollNotification>(
+        onNotification: _onScroll,
+        child: Stack(
+          children: [
+            widget.child,
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              height: MediaQuery.paddingOf(context).top,
+              child: IgnorePointer(
+                child: AnimatedOpacity(
+                  opacity: _shown ? 1 : 0,
+                  duration: reduceMotion(context)
+                      ? Duration.zero
+                      : Motion.short,
+                  child: const DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: AppColors.bg,
+                      border: Border(
+                        bottom: BorderSide(color: AppColors.line, width: 0.5),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
 }
 
 class _LangSwitch extends StatelessWidget {
