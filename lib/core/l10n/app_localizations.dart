@@ -644,6 +644,48 @@ abstract class AppLocalizations {
   /// **'Our history'**
   String get history;
 
+  /// No description provided for @wholeRupees.
+  ///
+  /// In en, this message translates to:
+  /// **'Whole rupees only, e.g. 1250'**
+  String get wholeRupees;
+
+  /// No description provided for @offlinePay.
+  ///
+  /// In en, this message translates to:
+  /// **'You’re offline. Connect to the internet to pay; nothing is charged or saved for later.'**
+  String get offlinePay;
+
+  /// No description provided for @deleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'We’ll send your request to the society’s Data Protection officer, who will contact you to confirm it.'**
+  String get deleteConfirm;
+
+  /// No description provided for @sendRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Send request'**
+  String get sendRequest;
+
+  /// No description provided for @rejectReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Not found in the society register'**
+  String get rejectReason;
+
+  /// No description provided for @rejectTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reject {name}’s request?'**
+  String rejectTitle(String name);
+
+  /// No description provided for @paymentHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment history & receipts'**
+  String get paymentHistory;
+
   /// No description provided for @profile.
   ///
   /// In en, this message translates to:
@@ -1069,12 +1111,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Rejected'**
   String get rejected;
-
-  /// No description provided for @rejectReason.
-  ///
-  /// In en, this message translates to:
-  /// **'Not found in the society register'**
-  String get rejectReason;
 
   /// No description provided for @nothingPending.
   ///

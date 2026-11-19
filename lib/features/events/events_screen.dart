@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/theme/tokens.dart';
@@ -17,8 +18,9 @@ class EventsScreen extends ConsumerWidget {
     final t = context.t;
     final lang = context.lang;
     final rsvps = ref.watch(appProvider.select((s) => s.rsvps));
+    final loggedIn = ref.watch(appProvider.select((s) => s.loggedIn));
     final today = muToday();
-    final sorted = [...events]..sort((a, b) => a.inDays.compareTo(b.inDays));
+    final sorted = upcomingEvents(today);
     final meta = AppText.label.copyWith(color: AppColors.muted);
 
     return AppScreen(
@@ -30,7 +32,7 @@ class EventsScreen extends ConsumerWidget {
           EnterFade(
             index: i,
             child: () {
-              final day = addDays(today, e.inDays);
+              final day = e.dayFrom(today);
               final going = rsvps.contains(e.id);
               return Container(
                 clipBehavior: Clip.antiAlias,
@@ -120,8 +122,12 @@ class EventsScreen extends ConsumerWidget {
                                 ? ButtonKind.primary
                                 : ButtonKind.secondary,
                             compact: true,
-                            onPressed: () =>
-                                ref.read(appProvider.notifier).toggleRsvp(e.id),
+                            // Members-only events: visitors are sent to log in first.
+                            onPressed: e.membersOnly && !loggedIn
+                                ? () => context.go('/member')
+                                : () => ref
+                                      .read(appProvider.notifier)
+                                      .toggleRsvp(e.id),
                           ),
                         ],
                       ),

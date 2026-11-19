@@ -16,10 +16,14 @@ class HistoryScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final t = context.t;
     final lang = context.lang;
-    final payments = ref.watch(appProvider.select((s) => s.payments));
+    // Visitor donations are not the member's; they stay out of this list.
+    final payments = ref
+        .watch(appProvider.select((s) => s.payments))
+        .where((p) => !p.anonymous)
+        .toList();
     return AppScreen(
       back: true,
-      title: t.history,
+      title: t.paymentHistory,
       children: [
         AppCard(
           padding: EdgeInsets.zero,

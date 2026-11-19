@@ -289,6 +289,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get history => 'Our history';
 
   @override
+  String get wholeRupees => 'Whole rupees only, e.g. 1250';
+
+  @override
+  String get offlinePay =>
+      'You’re offline. Connect to the internet to pay; nothing is charged or saved for later.';
+
+  @override
+  String get deleteConfirm =>
+      'We’ll send your request to the society’s Data Protection officer, who will contact you to confirm it.';
+
+  @override
+  String get sendRequest => 'Send request';
+
+  @override
+  String get rejectReason => 'Not found in the society register';
+
+  @override
+  String rejectTitle(String name) {
+    return 'Reject $name’s request?';
+  }
+
+  @override
+  String get paymentHistory => 'Payment history & receipts';
+
+  @override
   String get profile => 'Profile & settings';
 
   @override
@@ -502,9 +527,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rejected => 'Rejected';
-
-  @override
-  String get rejectReason => 'Not found in the society register';
 
   @override
   String get nothingPending => 'No requests waiting.';

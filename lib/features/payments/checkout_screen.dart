@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/theme/tokens.dart';
+import '../../core/utils/connectivity.dart';
 import '../../core/utils/format.dart';
 import '../../core/widgets/ui.dart';
 import '../../data/app_state.dart';
@@ -93,6 +94,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         monthKeys: r.months,
         fund: r.fund?.id,
         date: DateTime.now().toUtc(),
+        anonymous:
+            r.kind == PaymentKind.donation && !ref.read(appProvider).loggedIn,
       );
       ref.read(appProvider.notifier).confirmPayment(payment);
       setState(() => _paid = payment); // success shown in place
@@ -111,7 +114,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             ? t.donationReceived
             : t.paymentSuccessful,
         children: [
-          ReceiptView(payment: paid, onDone: () => context.go('/member')),
+          ReceiptView(
+            payment: paid,
+            onDone: () => context.go(paid.anonymous ? '/' : '/member'),
+          ),
         ],
       );
     }
@@ -129,6 +135,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     }
 
     final busy = _stage != _Stage.review && _stage != _Stage.declined;
+    final online = ref.isOnline;
     final steps = [
       (_Stage.auth, t.stepAuth),
       (_Stage.server, t.stepServer),
@@ -216,10 +223,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       ),
                     ],
                   ),
+                  if (!online) OfflineNote(t.offlinePay),
                   AppButton(
                     label: t.confirmPay,
                     icon: Icons.lock_rounded,
-                    onPressed: () => _confirm(r),
+                    onPressed: online ? () => _confirm(r) : null,
                   ),
                   AppButton(
                     label: t.cancel,

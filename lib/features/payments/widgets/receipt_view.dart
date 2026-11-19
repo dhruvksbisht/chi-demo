@@ -75,7 +75,7 @@ class _ReceiptViewState extends State<ReceiptView> {
               KV(t.date, longDate(context.lang, ymdOf(p.date))),
               KV(t.method, methodLabel(t, p.method)),
               KV(t.reference, p.ref),
-              KV(t.tabMember, member.number),
+              if (!p.anonymous) KV(t.tabMember, member.number),
             ],
           ),
         ),
@@ -92,12 +92,16 @@ class _ReceiptViewState extends State<ReceiptView> {
             style: AppText.caption.copyWith(color: AppColors.danger),
           ),
         if (widget.onDone != null) ...[
-          AppButton(label: t.backToAccount, onPressed: widget.onDone),
-          Text(
-            '${t.emailCopy} ${member.email}',
-            textAlign: TextAlign.center,
-            style: AppText.caption.copyWith(color: AppColors.muted),
+          AppButton(
+            label: p.anonymous ? t.done : t.backToAccount,
+            onPressed: widget.onDone,
           ),
+          if (!p.anonymous)
+            Text(
+              '${t.emailCopy} ${member.email}',
+              textAlign: TextAlign.center,
+              style: AppText.caption.copyWith(color: AppColors.muted),
+            ),
         ],
       ], Space.lg),
     );

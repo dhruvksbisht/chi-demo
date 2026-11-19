@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../../data/content.dart' show events;
 import '../../data/models.dart';
 import '../l10n/app_localizations.dart';
 import 'time.dart';
@@ -8,7 +9,20 @@ extension L10nX on BuildContext {
   AppLocalizations get t => AppLocalizations.of(this);
   Lang get lang =>
       Localizations.localeOf(this).languageCode == 'fr' ? Lang.fr : Lang.en;
-  String tr(L value) => value.of(lang);
+  String tr(L value) => fillDates(value.of(lang), lang);
+}
+
+/// Content that mentions an event date says `{agm}` ("29 November") or `{agmDay}`
+/// ("Sunday 29 November") instead of a fixed date, so news, notices and the inbox always
+/// agree with the Events list.
+String fillDates(String text, Lang lang, [Ymd? today]) {
+  if (!text.contains('{agm')) return text;
+  final day = events
+      .firstWhere((e) => e.id == 'agm')
+      .dayFrom(today ?? muToday());
+  final short = '${day.d} ${monthName(lang, day.m)}';
+  final long = '${weekdayName(lang, day)} $short';
+  return text.replaceAll('{agmDay}', long).replaceAll('{agm}', short);
 }
 
 const _months = {
@@ -78,9 +92,27 @@ const _hijriMonths = [
   'Dhul Hijjah',
 ];
 
+/// Standard French abbreviations (CLDR); cutting at 3 letters made juin and juillet both "jui".
+const _frShort = [
+  'janv.',
+  'févr.',
+  'mars',
+  'avr.',
+  'mai',
+  'juin',
+  'juil.',
+  'août',
+  'sept.',
+  'oct.',
+  'nov.',
+  'déc.',
+];
+
 String monthName(Lang lang, int m, {bool short = false}) {
-  final name = _months[lang]![m - 1];
-  return short ? name.substring(0, 3) : name;
+  if (!short) return _months[lang]![m - 1];
+  return lang == Lang.fr
+      ? _frShort[m - 1]
+      : _months[lang]![m - 1].substring(0, 3);
 }
 
 String capitalize(String s) =>

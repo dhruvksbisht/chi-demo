@@ -32,3 +32,15 @@ Set<FieldError> validateRequest({
   if (!_email.hasMatch(email.trim())) FieldError.email,
   if (!consent) FieldError.consent,
 };
+
+/// Donation amounts are whole rupees (money is held as `int`). Accepts "1,250", "1 250" and
+/// "1250.00"; returns null for anything else, including amounts with cents ("1234.50"), so the
+/// screen can say so instead of silently dropping the decimal point.
+int? parseRupees(String raw) {
+  final m = RegExp(r'^(\d+)(?:\.0{1,2})?$')
+      .firstMatch(raw.replaceAll(RegExp(r'[\s,]'), ''));
+  return m == null ? null : int.tryParse(m[1]!);
+}
+
+/// True when the input has non-zero cents, e.g. "1234.50".
+bool hasCents(String raw) => RegExp(r'\.\d*[1-9]').hasMatch(raw);

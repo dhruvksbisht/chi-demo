@@ -37,9 +37,20 @@ class AdminScreen extends ConsumerWidget {
         )
         .fold(0, (sum, p) => sum + p.amount);
 
-    void review(AccessRequest r, RequestStatus status) {
+    void review(AccessRequest r, RequestStatus status, {String? reason}) {
       HapticFeedback.mediumImpact();
-      ref.read(appProvider.notifier).reviewRequest(r.id, status);
+      ref
+          .read(appProvider.notifier)
+          .reviewRequest(r.id, status, reason: reason);
+    }
+
+    // FR-013: a rejection needs a reason, which is sent to the applicant.
+    Future<void> reject(AccessRequest r) async {
+      final reason = await showAdaptiveDialog<String>(
+        context: context,
+        builder: (_) => _ReasonDialog(name: r.name),
+      );
+      if (reason != null) review(r, RequestStatus.rejected, reason: reason);
     }
 
     final stats = [
@@ -146,7 +157,7 @@ class AdminScreen extends ConsumerWidget {
                             label: t.reject,
                             kind: ButtonKind.secondary,
                             compact: true,
-                            onPressed: () => review(r, RequestStatus.rejected),
+                            onPressed: () => reject(r),
                           ),
                         ),
                         const SizedBox(width: Space.sm),
@@ -171,7 +182,21 @@ class AdminScreen extends ConsumerWidget {
                 ),
                 child: Row(
                   children: [
-                    Expanded(child: Text(r.name, style: AppText.label)),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(r.name, style: AppText.label),
+                          if (r.reason case final reason?)
+                            Text(
+                              reason,
+                              style: AppText.caption.copyWith(
+                                color: AppColors.muted,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
                     StatusBadge(
                       r.status == RequestStatus.approved
                           ? t.approved
@@ -245,6 +270,63 @@ class AdminScreen extends ConsumerWidget {
               ),
             ),
           ],
+        ),
+      ],
+    );
+  }
+}
+
+/// Asks for the rejection reason; resolves to null when cancelled.
+class _ReasonDialog extends StatefulWidget {
+  const _ReasonDialog({required this.name});
+  final String name;
+
+  @override
+  State<_ReasonDialog> createState() => _ReasonDialogState();
+}
+
+class _ReasonDialogState extends State<_ReasonDialog> {
+  final _reason = TextEditingController();
+
+  @override
+  void dispose() {
+    _reason.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.t;
+    final ready = _reason.text.trim().isNotEmpty;
+    return AlertDialog.adaptive(
+      title: Text(t.rejectTitle(widget.name)),
+      content: Material(
+        type: MaterialType.transparency,
+        child: Padding(
+          padding: const EdgeInsets.only(top: Space.md),
+          child: TextField(
+            controller: _reason,
+            autofocus: true,
+            maxLines: 3,
+            minLines: 2,
+            textCapitalization: TextCapitalization.sentences,
+            decoration: InputDecoration(hintText: t.rejectReason),
+            onChanged: (_) => setState(() {}),
+          ),
+        ),
+      ),
+      actions: [
+        adaptiveAction(
+          context,
+          label: t.cancel,
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        adaptiveAction(
+          context,
+          label: t.reject,
+          onPressed: ready
+              ? () => Navigator.of(context).pop(_reason.text.trim())
+              : null,
         ),
       ],
     );

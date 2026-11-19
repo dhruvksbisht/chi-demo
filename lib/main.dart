@@ -53,12 +53,17 @@ class _ChiAppState extends ConsumerState<ChiApp> {
       ],
       routerConfig: _router,
       // Tablets get the phone layout with a readable max width (NFR-05).
-      builder: (context, child) => ColoredBox(
-        color: AppColors.sunken,
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 560),
-            child: child,
+      // Dark status-bar icons by default (pages sit on warm paper); photo headers override
+      // this with a light region of their own.
+      builder: (context, child) => AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle.dark,
+        child: ColoredBox(
+          color: AppColors.sunken,
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 560),
+              child: child,
+            ),
           ),
         ),
       ),

@@ -1,26 +1,29 @@
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/theme/tokens.dart';
+import '../../core/utils/connectivity.dart';
 import '../../core/utils/format.dart';
 import '../../core/widgets/photo.dart';
 import '../../core/widgets/ui.dart';
 import '../../data/content.dart';
+import '../../data/validation.dart';
 import '../payments/checkout_screen.dart';
 
 const _presets = [250, 500, 1000, 2500];
 const _min = 50;
 const _max = 500000;
 
-class DonateScreen extends StatefulWidget {
+class DonateScreen extends ConsumerStatefulWidget {
   const DonateScreen({super.key});
 
   @override
-  State<DonateScreen> createState() => _DonateScreenState();
+  ConsumerState<DonateScreen> createState() => _DonateScreenState();
 }
 
-class _DonateScreenState extends State<DonateScreen> {
+class _DonateScreenState extends ConsumerState<DonateScreen> {
   Fund _fund = funds.first;
   final _amount = TextEditingController(text: '500');
 
@@ -33,8 +36,9 @@ class _DonateScreenState extends State<DonateScreen> {
   @override
   Widget build(BuildContext context) {
     final t = context.t;
-    final value = int.tryParse(_amount.text) ?? 0;
+    final value = parseRupees(_amount.text) ?? 0;
     final valid = value >= _min && value <= _max;
+    final online = ref.isOnline;
 
     Widget choice(String label, bool on, VoidCallback onTap) => Pressable(
       onTap: onTap,
@@ -83,15 +87,25 @@ class _DonateScreenState extends State<DonateScreen> {
       height: 260,
       title: t.donate,
       subtitle: t.donateSub,
-      footer: AppButton(
-        label: valid ? '${t.donateNow} · ${mur(value)}' : t.donateNow,
-        icon: Icons.volunteer_activism_rounded,
-        onPressed: valid
-            ? () => context.push(
-                '/checkout',
-                extra: CheckoutRequest.donation(fund: _fund, amount: value),
-              )
-            : null,
+      footer: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (!online) ...[
+            OfflineNote(t.offlinePay),
+            const SizedBox(height: Space.sm),
+          ],
+          AppButton(
+            label: valid ? '${t.donateNow} · ${mur(value)}' : t.donateNow,
+            icon: Icons.volunteer_activism_rounded,
+            onPressed: valid && online
+                ? () => context.push(
+                    '/checkout',
+                    extra: CheckoutRequest.donation(fund: _fund, amount: value),
+                  )
+                : null,
+          ),
+        ],
       ),
       children: [
         Section(
@@ -121,11 +135,17 @@ class _DonateScreenState extends State<DonateScreen> {
             AppField(
               label: 'MUR',
               controller: _amount,
-              keyboardType: TextInputType.number,
-              formatters: [FilteringTextInputFormatter.digitsOnly],
-              error: !valid && _amount.text.isNotEmpty
-                  ? '${mur(_min)} – ${mur(_max)}'
-                  : null,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              formatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[\d., ]')),
+              ],
+              error: valid || _amount.text.isEmpty
+                  ? null
+                  : hasCents(_amount.text)
+                  ? t.wholeRupees
+                  : '${mur(_min)} – ${mur(_max)}',
               onChanged: (_) => setState(() {}),
             ),
           ],

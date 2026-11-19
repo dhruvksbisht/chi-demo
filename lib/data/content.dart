@@ -2,6 +2,7 @@
 /// panel (FR-008); names, numbers and history are placeholders for CHI to replace.
 library;
 
+import '../core/utils/time.dart';
 import 'models.dart';
 import 'photos.dart';
 
@@ -45,16 +46,16 @@ const news = <NewsItem>[
     kind: NewsKind.notice,
     daysAgo: 1,
     title: L(
-      'Annual General Meeting, 29 November',
-      'Assemblée générale annuelle, 29 novembre',
+      'Annual General Meeting, {agm}',
+      'Assemblée générale annuelle, {agm}',
     ),
     summary: L(
       'Agenda, venue and proxy forms now available.',
       'Ordre du jour, lieu et procurations disponibles.',
     ),
     body: L(
-      'The AGM will be held after Asr on Sunday 29 November in the main hall. The agenda covers the treasurer’s report, the centenary programme and the election of two committee members. Proxy forms are in the Documents section of the app.',
-      'L’AGA se tiendra après Asr le dimanche 29 novembre dans la grande salle. À l’ordre du jour : rapport du trésorier, programme du centenaire et élection de deux membres du comité. Les procurations sont dans la rubrique Documents.',
+      'The AGM will be held after Asr on {agmDay} in the main hall. The agenda covers the treasurer’s report, the centenary programme and the election of two committee members. Proxy forms are in the Documents section of the app.',
+      'L’AGA se tiendra après Asr le {agmDay} dans la grande salle. À l’ordre du jour : rapport du trésorier, programme du centenaire et élection de deux membres du comité. Les procurations sont dans la rubrique Documents.',
     ),
   ),
   NewsItem(
@@ -255,21 +256,38 @@ class EventItem {
     required this.place,
     required this.photo,
     this.membersOnly = false,
+    this.onSunday = false,
   });
   final String id;
+
+  /// Days from today. With [onSunday], the event falls on the first Sunday on or after that.
   final int inDays;
+  final bool onSunday;
   final String time;
   final L title;
   final String place;
   final bool membersOnly;
   final Photos photo;
+
+  /// The event's date, always in the future relative to [today] so the demo never goes stale.
+  Ymd dayFrom(Ymd today) {
+    final day = addDays(today, inDays);
+    return onSunday ? addDays(day, (7 - weekdayIndex(day)) % 7) : day;
+  }
 }
+
+/// Events sorted soonest first.
+List<EventItem> upcomingEvents(Ymd today) => [...events]
+  ..sort((a, b) => _ord(a.dayFrom(today)).compareTo(_ord(b.dayFrom(today))));
+
+int _ord(Ymd d) => d.y * 10000 + d.m * 100 + d.d;
 
 const events = <EventItem>[
   EventItem(
     id: 'agm',
     photo: Photos.jummahHall,
-    inDays: 20,
+    inDays: 10,
+    onSunday: true, // the AGM is held on a Sunday after Asr
     time: '16:45',
     title: L('Annual General Meeting', 'Assemblée générale annuelle'),
     place: 'Main hall',
@@ -474,7 +492,7 @@ const inbox = <InboxItem>[
   InboxItem(
     'notice',
     1,
-    L('AGM on 29 November', 'AGA le 29 novembre'),
+    L('AGM on {agm}', 'AGA le {agm}'),
     L(
       'Agenda and proxy forms are now available.',
       'Ordre du jour et procurations disponibles.',

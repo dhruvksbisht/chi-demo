@@ -812,6 +812,30 @@ class CheckBox extends StatelessWidget {
   );
 }
 
+/// Why a payment button is disabled while the device is offline (NFR-04).
+class OfflineNote extends StatelessWidget {
+  const OfflineNote(this.message, {super.key});
+  final String message;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    liveRegion: true,
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Icon(Icons.wifi_off_rounded, size: 20, color: AppColors.danger),
+        const SizedBox(width: Space.sm),
+        Expanded(
+          child: Text(
+            message,
+            style: AppText.label.copyWith(color: AppColors.inkSoft),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
 /// Rebuilds every [interval]; drives countdowns.
 class NowBuilder extends StatefulWidget {
   const NowBuilder({
@@ -827,10 +851,14 @@ class NowBuilder extends StatefulWidget {
 }
 
 class _NowBuilderState extends State<NowBuilder> {
-  late final Timer _timer = Timer.periodic(
-    widget.interval,
-    (_) => setState(() {}),
-  );
+  late final Timer _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    // Started eagerly: a lazy `late` initialiser would only run on dispose, so it never ticked.
+    _timer = Timer.periodic(widget.interval, (_) => setState(() {}));
+  }
 
   @override
   void dispose() {
@@ -858,10 +886,39 @@ Future<void> showInfo(BuildContext context, String title, String body) =>
       ),
     );
 
+/// Asks before an action that can't be taken back. Resolves to true only on [confirmLabel].
+Future<bool> confirmAction(
+  BuildContext context, {
+  required String title,
+  required String body,
+  required String confirmLabel,
+}) async {
+  final ok = await showAdaptiveDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog.adaptive(
+      title: Text(title),
+      content: Text(body),
+      actions: [
+        adaptiveAction(
+          ctx,
+          label: ctx.t.cancel,
+          onPressed: () => Navigator.of(ctx).pop(false),
+        ),
+        adaptiveAction(
+          ctx,
+          label: confirmLabel,
+          onPressed: () => Navigator.of(ctx).pop(true),
+        ),
+      ],
+    ),
+  );
+  return ok ?? false;
+}
+
 Widget adaptiveAction(
   BuildContext context, {
   required String label,
-  required VoidCallback onPressed,
+  required VoidCallback? onPressed,
 }) => TextButton(
   onPressed: onPressed,
   child: Text(

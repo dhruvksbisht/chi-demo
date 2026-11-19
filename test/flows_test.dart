@@ -82,7 +82,9 @@ void main() {
     expect(find.text('Consent is required'), findsOneWidget);
   });
 
-  testWidgets('French at 200% text size: no overflow on the main screens', (tester) async {
+  testWidgets('French at 200% text size: no overflow on the main screens', (
+    tester,
+  ) async {
     tester.platformDispatcher.textScaleFactorTestValue = 2;
     addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
     await _pumpApp(tester);

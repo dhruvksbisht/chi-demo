@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/theme/tokens.dart';
+import '../../core/utils/connectivity.dart';
 import '../../core/utils/format.dart';
 import '../../core/widgets/ui.dart';
 import '../../data/app_state.dart';
@@ -20,13 +21,17 @@ class PayScreen extends ConsumerStatefulWidget {
 }
 
 class _PayScreenState extends ConsumerState<PayScreen> {
-  int? _count;
+  /// The member's choice, tied to the first unpaid month it was made against. Once a payment
+  /// goes through that month is paid, so the stale choice is dropped instead of being applied
+  /// to the shorter list (which would pre-select future months).
+  ({String anchor, int count})? _choice;
 
   @override
   Widget build(BuildContext context) {
     final t = context.t;
     final lang = context.lang;
     final s = ref.watch(appProvider);
+    final online = ref.isOnline;
     final unpaid = s.months.where((m) => !m.isPaid).take(_maxAhead).toList();
     final arrearsCount = unpaid
         .where((m) => s.statusOf(m) == MonthStatus.overdue)
@@ -34,14 +39,16 @@ class _PayScreenState extends ConsumerState<PayScreen> {
 
     // Months are paid in order: selecting a month selects every earlier unpaid month,
     // and arrears can never be deselected (PAY-01, US-05).
-    final count = (_count ?? arrearsCount + 1).clamp(0, unpaid.length);
+    final anchor = unpaid.isEmpty ? '' : unpaid.first.key;
+    final chosen = _choice?.anchor == anchor ? _choice?.count : null;
+    final count = (chosen ?? arrearsCount + 1).clamp(0, unpaid.length);
     final selected = unpaid.take(count).toList();
     final total = selected.fold(0, (sum, m) => sum + m.amount);
 
     void toggle(int i) => setState(
-      () => _count = (i + 1 == count ? i : i + 1).clamp(
-        arrearsCount,
-        unpaid.length,
+      () => _choice = (
+        anchor: anchor,
+        count: (i + 1 == count ? i : i + 1).clamp(arrearsCount, unpaid.length),
       ),
     );
 
@@ -71,10 +78,14 @@ class _PayScreenState extends ConsumerState<PayScreen> {
             ],
           ),
           const SizedBox(height: Space.md),
+          if (!online) ...[
+            OfflineNote(t.offlinePay),
+            const SizedBox(height: Space.sm),
+          ],
           AppButton(
             label: t.payWithJuice,
             icon: Icons.lock_rounded,
-            onPressed: count == 0
+            onPressed: count == 0 || !online
                 ? null
                 : () => context.push(
                     '/checkout',

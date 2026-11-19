@@ -291,6 +291,31 @@ class AppLocalizationsFr extends AppLocalizations {
   String get history => 'Notre histoire';
 
   @override
+  String get wholeRupees => 'Roupies entières uniquement, ex. 1250';
+
+  @override
+  String get offlinePay =>
+      'Vous êtes hors ligne. Connectez-vous à Internet pour payer ; rien n’est débité ni mis en attente.';
+
+  @override
+  String get deleteConfirm =>
+      'Votre demande sera transmise au responsable de la protection des données de la société, qui vous contactera pour la confirmer.';
+
+  @override
+  String get sendRequest => 'Envoyer la demande';
+
+  @override
+  String get rejectReason => 'Absent du registre de la société';
+
+  @override
+  String rejectTitle(String name) {
+    return 'Refuser la demande de $name ?';
+  }
+
+  @override
+  String get paymentHistory => 'Historique et reçus';
+
+  @override
   String get profile => 'Profil et réglages';
 
   @override
@@ -504,9 +529,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get rejected => 'Refusée';
-
-  @override
-  String get rejectReason => 'Absent du registre de la société';
 
   @override
   String get nothingPending => 'Aucune demande en attente.';

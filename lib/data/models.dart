@@ -53,6 +53,7 @@ class Payment {
     required this.monthKeys,
     required this.date,
     this.fund,
+    this.anonymous = false,
   });
 
   final String id;
@@ -65,6 +66,10 @@ class Payment {
   final String? fund;
   final DateTime date;
 
+  /// A donation made by a visitor who is not logged in: not tied to any member account,
+  /// so it carries no member number and stays out of the member's history.
+  final bool anonymous;
+
   Payment withMonths(List<String> keys) => Payment(
     id: id,
     receiptNo: receiptNo,
@@ -75,6 +80,7 @@ class Payment {
     monthKeys: keys,
     date: date,
     fund: fund,
+    anonymous: anonymous,
   );
 }
 
@@ -88,6 +94,7 @@ class AccessRequest {
     required this.matched,
     required this.submitted,
     this.status = RequestStatus.pending,
+    this.reason,
   });
 
   final String id;
@@ -99,7 +106,10 @@ class AccessRequest {
   final RequestStatus status;
   final DateTime submitted;
 
-  AccessRequest withStatus(RequestStatus s) => AccessRequest(
+  /// Why the request was rejected (FR-013); null for pending or approved requests.
+  final String? reason;
+
+  AccessRequest withStatus(RequestStatus s, {String? reason}) => AccessRequest(
     id: id,
     name: name,
     nic: nic,
@@ -108,6 +118,7 @@ class AccessRequest {
     matched: matched,
     submitted: submitted,
     status: s,
+    reason: reason,
   );
 }
 

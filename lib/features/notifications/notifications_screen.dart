@@ -9,6 +9,7 @@ import '../../core/utils/format.dart';
 import '../../core/widgets/ui.dart';
 import '../../data/app_state.dart';
 import '../../data/content.dart';
+import '../../data/models.dart';
 
 IconData _icon(String kind) => switch (kind) {
   'subscription' => Icons.credit_card_rounded,
@@ -48,6 +49,20 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   Widget build(BuildContext context) {
     final t = context.t;
     final unread = !ref.watch(appProvider.select((s) => s.inboxRead));
+    // The subscription reminder only shows while something is actually due or overdue.
+    final owes = ref.watch(
+      appProvider.select(
+        (s) => s.months.any(
+          (m) =>
+              s.statusOf(m) != MonthStatus.paid &&
+              s.statusOf(m) != MonthStatus.upcoming,
+        ),
+      ),
+    );
+    final items = [
+      for (final n in inbox)
+        if (n.kind != 'subscription' || owes) n,
+    ];
     return AppScreen(
       back: true,
       title: t.notifications,
@@ -56,7 +71,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           padding: EdgeInsets.zero,
           child: Column(
             children: [
-              for (final (i, n) in inbox.indexed)
+              for (final (i, n) in items.indexed)
                 EnterFade(
                   index: i,
                   child: Pressable(
@@ -65,7 +80,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(Space.lg),
                       decoration: BoxDecoration(
-                        border: i < inbox.length - 1
+                        border: i < items.length - 1
                             ? const Border(
                                 bottom: BorderSide(
                                   color: AppColors.line,
@@ -109,7 +124,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                             ),
                           ),
                           AnimatedOpacity(
-                            opacity: unread && i < 2 ? 1 : 0,
+                            opacity: unread && n.daysAgo <= 1 ? 1 : 0,
                             duration: reduceMotion(context)
                                 ? Duration.zero
                                 : Motion.short,

@@ -31,7 +31,7 @@ Future<Uint8List> buildReceiptPdf(Payment p) async {
   final fund = fundById(p.fund);
   final rows = <(String, String)>[
     ('Receipt no.', p.receiptNo),
-    ('Member', '${member.name} (${member.number})'),
+    if (!p.anonymous) ('Member', '${member.name} (${member.number})'),
     p.kind == PaymentKind.subscription
         ? ('Months', monthsLabel(p.monthKeys, Lang.en))
         : ('Fund', fund?.label.en ?? 'General'),

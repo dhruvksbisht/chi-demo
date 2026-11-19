@@ -36,9 +36,8 @@ class HomeScreen extends ConsumerWidget {
     final hijri = toHijri(today);
     final top = MediaQuery.paddingOf(context).top;
     final notice = news.where((n) => n.kind == NewsKind.notice).firstOrNull;
-    final upcoming = [...events]..sort((a, b) => a.inDays.compareTo(b.inDays));
-    final next = upcoming.first;
-    final nextDay = addDays(today, next.inDays);
+    final next = upcomingEvents(today).first;
+    final nextDay = next.dayFrom(today);
     final nextWhen =
         '${capitalize(weekdayName(lang, nextDay).substring(0, 3))} ${nextDay.d} ${monthName(lang, nextDay.m, short: true)}';
 
@@ -71,86 +70,92 @@ class HomeScreen extends ConsumerWidget {
     ];
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light,
+      value: SystemUiOverlayStyle.dark,
       child: Scaffold(
         body: ListView(
           padding: EdgeInsets.zero,
           children: [
             // ---- Photo hero with greeting; the prayer card overlaps its bottom edge.
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                SizedBox(
-                  height: _heroHeight + top,
-                  width: double.infinity,
-                  child: NowBuilder(
-                    interval: const Duration(minutes: 1),
-                    builder: (context, now) => AnimatedSwitcher(
-                      duration: reduceMotion(context)
-                          ? Duration.zero
-                          : const Duration(milliseconds: 600),
-                      child: Photo(
-                        _isNight(now)
-                            ? Photos.portLouisNight
-                            : Photos.jummahStreet,
-                        key: ValueKey(_isNight(now)),
-                        alignment: const Alignment(0, -0.2),
-                        scrim: Scrims.both,
+            // Light status bar only while the photo is under it; dark once scrolled.
+            AnnotatedRegion<SystemUiOverlayStyle>(
+              value: SystemUiOverlayStyle.light,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  SizedBox(
+                    height: _heroHeight + top,
+                    width: double.infinity,
+                    child: NowBuilder(
+                      interval: const Duration(minutes: 1),
+                      builder: (context, now) => AnimatedSwitcher(
+                        duration: reduceMotion(context)
+                            ? Duration.zero
+                            : const Duration(milliseconds: 600),
+                        child: Photo(
+                          _isNight(now)
+                              ? Photos.portLouisNight
+                              : Photos.jummahStreet,
+                          key: ValueKey(_isNight(now)),
+                          alignment: const Alignment(0, -0.2),
+                          scrim: Scrims.both,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                Padding(
-                  padding: EdgeInsets.fromLTRB(
-                    Space.lg,
-                    top + Space.sm,
-                    Space.lg,
-                    0,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          const Logo(size: 44),
-                          const Spacer(),
-                          _LangSwitch(
-                            value: ref.watch(langProvider),
-                            onChanged: ref.read(appProvider.notifier).setLang,
-                          ),
-                          const SizedBox(width: Space.xs),
-                          IconBtn(
-                            icon: Icons.notifications_rounded,
-                            label: t.notifications,
-                            badge: !inboxRead,
-                            onPhoto: true,
-                            onTap: () => context.push('/notifications'),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 96),
-                      Text(
-                        '${capitalize(weekdayName(lang, today))} ${longDate(lang, today)}',
-                        style: AppText.label.copyWith(
-                          color: AppColors.onNightMuted,
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      Space.lg,
+                      top + Space.sm,
+                      Space.lg,
+                      0,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Logo(size: 44),
+                            const Spacer(),
+                            _LangSwitch(
+                              value: ref.watch(langProvider),
+                              onChanged: ref.read(appProvider.notifier).setLang,
+                            ),
+                            const SizedBox(width: Space.xs),
+                            IconBtn(
+                              icon: Icons.notifications_rounded,
+                              label: t.notifications,
+                              badge: !inboxRead,
+                              onPhoto: true,
+                              onTap: () => context.push('/notifications'),
+                            ),
+                          ],
                         ),
-                      ),
-                      const SizedBox(height: Space.xs),
-                      Text(
-                        t.assalamu,
-                        style: AppText.hero.copyWith(color: AppColors.onNight),
-                      ),
-                      const SizedBox(height: Space.xs),
-                      Text(
-                        '${hijri.d} ${hijriMonthName(hijri.m)} ${hijri.y} AH',
-                        style: AppText.label.copyWith(color: AppColors.amber),
-                      ),
-                      const SizedBox(height: Space.lg),
-                      const _PrayerCard(),
-                    ],
+                        const SizedBox(height: 96),
+                        Text(
+                          '${capitalize(weekdayName(lang, today))} ${longDate(lang, today)}',
+                          style: AppText.label.copyWith(
+                            color: AppColors.onNightMuted,
+                          ),
+                        ),
+                        const SizedBox(height: Space.xs),
+                        Text(
+                          t.assalamu,
+                          style: AppText.hero.copyWith(
+                            color: AppColors.onNight,
+                          ),
+                        ),
+                        const SizedBox(height: Space.xs),
+                        Text(
+                          '${hijri.d} ${hijriMonthName(hijri.m)} ${hijri.y} AH',
+                          style: AppText.label.copyWith(color: AppColors.amber),
+                        ),
+                        const SizedBox(height: Space.lg),
+                        const _PrayerCard(),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(
@@ -331,6 +336,9 @@ class _LangSwitch extends StatelessWidget {
   );
 }
 
+/// Above this text scale the five prayer chips switch to stacked rows.
+const _chipMaxScale = 1.3;
+
 /// The day's anchor: next prayer with a live countdown, then all five times.
 class _PrayerCard extends StatelessWidget {
   const _PrayerCard();
@@ -395,16 +403,17 @@ class _PrayerCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: Space.md),
-                Row(
-                  children: [
-                    for (final p in times)
-                      Expanded(
-                        child: AnimatedContainer(
-                          duration: reduceMotion(context)
-                              ? Duration.zero
-                              : Motion.short,
-                          margin: const EdgeInsets.symmetric(horizontal: 2),
+                // Five chips side by side only fit at normal text sizes; at large system text
+                // the times would break mid-number, so they stack as rows instead (NFR-06).
+                if (MediaQuery.textScalerOf(context).scale(14) >
+                    14 * _chipMaxScale)
+                  Column(
+                    children: [
+                      for (final p in times)
+                        Container(
+                          margin: const EdgeInsets.only(top: Space.xs),
                           padding: const EdgeInsets.symmetric(
+                            horizontal: Space.md,
                             vertical: Space.sm,
                           ),
                           decoration: BoxDecoration(
@@ -413,15 +422,13 @@ class _PrayerCard extends StatelessWidget {
                                 : AppColors.sunken,
                             borderRadius: BorderRadius.circular(Radii.md),
                           ),
-                          child: Column(
+                          child: Row(
                             children: [
-                              FittedBox(
+                              Expanded(
                                 child: Text(
                                   prayerLabel(t, p.name),
-                                  style: AppText.caption.copyWith(
-                                    color: p.name == next.name
-                                        ? AppColors.ink
-                                        : AppColors.muted,
+                                  style: AppText.label.copyWith(
+                                    color: AppColors.ink,
                                   ),
                                 ),
                               ),
@@ -432,9 +439,55 @@ class _PrayerCard extends StatelessWidget {
                             ],
                           ),
                         ),
-                      ),
-                  ],
-                ),
+                    ],
+                  )
+                else
+                  Row(
+                    children: [
+                      for (final p in times)
+                        Expanded(
+                          child: AnimatedContainer(
+                            duration: reduceMotion(context)
+                                ? Duration.zero
+                                : Motion.short,
+                            margin: const EdgeInsets.symmetric(horizontal: 2),
+                            padding: const EdgeInsets.symmetric(
+                              vertical: Space.sm,
+                            ),
+                            decoration: BoxDecoration(
+                              color: p.name == next.name
+                                  ? AppColors.amber
+                                  : AppColors.sunken,
+                              borderRadius: BorderRadius.circular(Radii.md),
+                            ),
+                            child: Column(
+                              children: [
+                                FittedBox(
+                                  child: Text(
+                                    prayerLabel(t, p.name),
+                                    style: AppText.caption.copyWith(
+                                      color: p.name == next.name
+                                          ? AppColors.ink
+                                          : AppColors.muted,
+                                    ),
+                                  ),
+                                ),
+                                FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Text(
+                                    formatTime(p.time),
+                                    maxLines: 1,
+                                    style: AppText.number.copyWith(
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
               ],
             ),
           ),

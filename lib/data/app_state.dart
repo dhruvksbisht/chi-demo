@@ -191,11 +191,19 @@ class AppNotifier extends Notifier<AppState> {
   void submitRequest(AccessRequest r) =>
       state = state.copyWith(requests: [r, ...state.requests]);
 
-  void reviewRequest(String id, RequestStatus status) => state = state.copyWith(
-    requests: [
-      for (final r in state.requests) r.id == id ? r.withStatus(status) : r,
-    ],
-  );
+  /// Approve or reject an access request; a rejection carries a reason (FR-013).
+  void reviewRequest(String id, RequestStatus status, {String? reason}) {
+    assert(
+      status != RequestStatus.rejected || (reason?.trim().isNotEmpty ?? false),
+      'a rejection needs a reason',
+    );
+    state = state.copyWith(
+      requests: [
+        for (final r in state.requests)
+          r.id == id ? r.withStatus(status, reason: reason?.trim()) : r,
+      ],
+    );
+  }
 
   void toggleRsvp(String id) {
     final next = {...state.rsvps};

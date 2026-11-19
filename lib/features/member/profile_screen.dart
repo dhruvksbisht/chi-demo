@@ -116,7 +116,17 @@ class ProfileScreen extends ConsumerWidget {
                 icon: Icons.delete_rounded,
                 title: t.deleteData,
                 subtitle: 'Data Protection Act 2017',
-                onTap: () => showInfo(context, t.deleteData, t.deleteSent),
+                onTap: () async {
+                  final ok = await confirmAction(
+                    context,
+                    title: t.deleteData,
+                    body: t.deleteConfirm,
+                    confirmLabel: t.sendRequest,
+                  );
+                  if (ok && context.mounted) {
+                    await showInfo(context, t.deleteData, t.deleteSent);
+                  }
+                },
                 divider: false,
               ),
             ],

@@ -342,7 +342,7 @@ class _Dashboard extends ConsumerWidget {
             children: [
               ListRow(
                 icon: Icons.receipt_long_rounded,
-                title: t.history,
+                title: t.paymentHistory,
                 onTap: () => context.push('/history'),
               ),
               ListRow(
